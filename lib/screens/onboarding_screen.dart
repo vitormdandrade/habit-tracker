@@ -118,12 +118,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     _typingController2.reset();
     _typingController3.reset();
     
-    _typingController1.forward();
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) _typingController2.forward();
-    });
-    Future.delayed(const Duration(milliseconds: 1600), () {
-      if (mounted) _typingController3.forward();
+    // Start first animation
+    _typingController1.forward().then((_) {
+      // Wait a bit after first animation completes, then start second
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) {
+          _typingController2.forward().then((_) {
+            // Wait a bit after second animation completes, then start third
+            Future.delayed(const Duration(milliseconds: 300), () {
+              if (mounted) _typingController3.forward();
+            });
+          });
+        }
+      });
     });
   }
 
