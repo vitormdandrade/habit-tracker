@@ -92,6 +92,17 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
   late DateTime _lastOpenedDate;
   int? _previousStreak;
   bool _isShowingStreakNotification = false;
+  
+  // Helper function to style emojis as off-white and fully opaque
+  Widget _buildStyledEmoji(String emoji, {double fontSize = 16}) {
+    return Text(
+      emoji,
+      style: TextStyle(
+        fontSize: fontSize,
+        color: const Color(0xFFF5F5F5), // Off-white color
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -289,13 +300,22 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                       setStateDialog(() => selected.remove(habit));
                     }
                   },
-                  title: Text('${_habitEmojis[habit] ?? ''} $habit', style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w400,
-                    fontSize: 13,
-                    fontFamily: 'Montserrat',
-                    letterSpacing: 0.2,
-                  )),
+                  title: Row(
+                    children: [
+                      _buildStyledEmoji(_habitEmojis[habit] ?? '', fontSize: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        habit,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 13,
+                          fontFamily: 'Montserrat',
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ],
+                  ),
                   controlAffinity: ListTileControlAffinity.leading,
                   activeColor: Colors.tealAccent,
                   dense: true,
@@ -370,7 +390,16 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
           children: [
             const Text('Select a new habit to add:', style: TextStyle(color: Colors.white70)),
             ...available.map((habit) => ListTile(
-              title: Text('${_habitEmojis[habit] ?? ''} $habit', style: const TextStyle(color: Colors.white)),
+              title: Row(
+                children: [
+                  _buildStyledEmoji(_habitEmojis[habit] ?? '', fontSize: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    habit,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
               onTap: () {
                 setState(() {
                   tracker!.habits.add(Habit(id: habit, name: habit, history: []));
@@ -786,12 +815,18 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
               onPressed: _toggleDevMode,
             ),
           ],
-          // Show sign up button if not authenticated, sign out if authenticated
+          // Show sign in button if not authenticated, sign out if authenticated
           if (_authService.currentUser == null)
-            IconButton(
-              icon: const Icon(Icons.cloud_upload, color: Colors.tealAccent),
-              tooltip: 'Save Progress',
+            TextButton(
               onPressed: _showSaveProgressDialog,
+              child: const Text(
+                'Sign In',
+                style: TextStyle(
+                  color: Colors.tealAccent,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
             )
           else
             IconButton(
@@ -857,7 +892,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text('🔥', style: TextStyle(fontSize: 28)),
+                                _buildStyledEmoji('🔥', fontSize: 28),
                                 const SizedBox(width: 8),
                                 Text(
                                   '${tracker!.streak}',
@@ -917,7 +952,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           child: Row(
                             children: [
-                              const Text('⭐', style: TextStyle(fontSize: 13)),
+                              _buildStyledEmoji('⭐', fontSize: 13),
                               const SizedBox(width: 2),
                               Text(
                                 '${tracker!.points}',
@@ -1012,14 +1047,22 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Expanded(
-                                child: Text(
-                                  '${_habitEmojis[habit.name] ?? ''} ${habit.name}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 13,
-                                    letterSpacing: 0.2,
-                                  ),
+                                child: Row(
+                                  children: [
+                                    _buildStyledEmoji(_habitEmojis[habit.name] ?? '', fontSize: 16),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        habit.name,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 13,
+                                          letterSpacing: 0.2,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               Padding(
@@ -1027,14 +1070,29 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(
-                                      '🔥${habit.streak}  •  ⭐${habit.points}',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w300,
-                                        letterSpacing: 0.1,
-                                      ),
+                                    Row(
+                                      children: [
+                                        _buildStyledEmoji('🔥', fontSize: 10),
+                                        Text(
+                                          '${habit.streak}  •  ',
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w300,
+                                            letterSpacing: 0.1,
+                                          ),
+                                        ),
+                                        _buildStyledEmoji('⭐', fontSize: 10),
+                                        Text(
+                                          '${habit.points}',
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w300,
+                                            letterSpacing: 0.1,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                     const SizedBox(width: 8),
                                     for (final d in last5Days)
