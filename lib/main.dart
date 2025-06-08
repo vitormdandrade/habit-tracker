@@ -95,11 +95,18 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
   
   // Helper function to style emojis as off-white and fully opaque
   Widget _buildStyledEmoji(String emoji, {double fontSize = 16}) {
-    return Text(
-      emoji,
-      style: TextStyle(
-        fontSize: fontSize,
-        color: const Color(0xFFF5F5F5), // Off-white color
+    return ColorFiltered(
+      colorFilter: const ColorFilter.matrix(<double>[
+        0.2126, 0.7152, 0.0722, 0, 0.96, // Red channel -> off-white
+        0.2126, 0.7152, 0.0722, 0, 0.96, // Green channel -> off-white
+        0.2126, 0.7152, 0.0722, 0, 0.96, // Blue channel -> off-white
+        0,      0,      0,      1, 0,    // Alpha channel (unchanged)
+      ]),
+      child: Text(
+        emoji,
+        style: TextStyle(
+          fontSize: fontSize,
+        ),
       ),
     );
   }
