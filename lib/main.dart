@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'habit_model.dart';
 import 'streak_notification.dart';
 import 'stats_screen.dart';
+import 'screens/auth_screen.dart';
+import 'services/auth_service.dart';
+import 'services/firestore_service.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const HabitTrackerApp());
 }
 
@@ -52,6 +61,11 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
   bool _onboarding = true;
   int? _initialHabitCount;
   int _currentIndex = 0;
+  bool _devMode = false;
+  int _devModeTapCount = 0;
+  final _authService = AuthService();
+  final _firestoreService = FirestoreService();
+  bool _isLoadingData = true;
   final List<String> _preMadeHabits = [
     'Running',
     'Reading',
@@ -87,8 +101,52 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
-    // Start onboarding
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    // Check if user is authenticated and try to load their data
+    final user = _authService.currentUser;
+    
+    if (user != null) {
+      try {
+        final loadedTracker = await _firestoreService.getHabitTracker();
+        
+        if (loadedTracker != null) {
+          setState(() {
+            tracker = loadedTracker;
+            _onboarding = false;
+            _isLoadingData = false;
+          });
+          _animationController.forward();
+          return;
+        }
+      } catch (e) {
+        print('Error loading user data: $e');
+        // Continue to local onboarding
+      }
+    }
+    
+    // No authenticated user or no data - start local onboarding
+    setState(() {
+      _isLoadingData = false;
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) => _showInitialHabitCountDialog());
+  }
+
+  Future<void> _saveData() async {
+    if (tracker != null) {
+      try {
+        await _firestoreService.saveHabitTracker(tracker!);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving data: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -134,6 +192,22 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                 letterSpacing: 0.1,
               ),
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            // Login link for existing users
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close onboarding dialog
+                _showExistingUserLogin();
+              },
+              child: const Text(
+                'Already a user? Click here to log in',
+                style: TextStyle(
+                  color: Colors.tealAccent,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
             ),
             const SizedBox(height: 14),
             Row(
@@ -259,6 +333,8 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
       // Set the start date when tracker is first created
       tracker!.startDate = DateTime.now();
       _onboarding = false;
+      // Save initial data to Firebase
+      _saveData();
       // Trigger animation after onboarding is complete
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _animationController.forward(from: 0.0);
@@ -277,6 +353,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
         habit.history.add(HabitDay(date: _simulatedToday, completed: value ?? false));
       }
     });
+    _saveData();
   }
 
   void _addHabit() {
@@ -419,9 +496,224 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
     });
   }
 
+  void _handleDevModeTap() {
+    _devModeTapCount++;
+    if (_devModeTapCount >= 7) {
+      setState(() {
+        _devMode = true;
+        _devModeTapCount = 0;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('🔧 Developer Mode Activated! You can now access testing features.'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+    
+    // Reset tap count after 3 seconds of inactivity
+    Future.delayed(const Duration(seconds: 3), () {
+      if (_devModeTapCount < 7) {
+        _devModeTapCount = 0;
+      }
+    });
+  }
+
+  void _toggleDevMode() {
+    setState(() {
+      _devMode = !_devMode;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_devMode 
+          ? '🔧 Developer Mode Enabled' 
+          : '👤 Developer Mode Disabled'),
+        backgroundColor: _devMode ? Colors.orange : Colors.grey,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _signOut() async {
+    try {
+      await _authService.signOut();
+      setState(() {
+        // Refresh the UI to show save progress button again
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error signing out: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _showSaveProgressDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 400, maxHeight: 600),
+          child: AuthScreen(
+            onAuthSuccess: _onAuthSuccess,
+            showCloseButton: true,
+            defaultToSignUp: true, // Default to sign-up for new users saving progress
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showExistingUserLogin() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 400, maxHeight: 600),
+          child: AuthScreen(
+            onAuthSuccess: _onExistingUserAuthSuccess,
+            showCloseButton: true,
+            defaultToSignUp: false, // Default to sign-in for existing users
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _onAuthSuccess() async {
+    Navigator.of(context).pop(); // Close the dialog
+    
+    // Show loading while syncing local data to Firebase
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        backgroundColor: Color(0xFF181A20),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(color: Colors.tealAccent),
+            SizedBox(height: 16),
+            Text(
+              'Syncing your progress...',
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      // Save current local data to Firebase
+      if (tracker != null) {
+        await _firestoreService.saveHabitTracker(tracker!);
+      }
+      
+      Navigator.of(context).pop(); // Close loading dialog
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✅ Progress saved! Your data is now backed up to the cloud.'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      
+      setState(() {
+        // Refresh the UI to show sign out button
+      });
+    } catch (e) {
+      Navigator.of(context).pop(); // Close loading dialog
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to sync progress: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _onExistingUserAuthSuccess() async {
+    Navigator.of(context).pop(); // Close the dialog
+    
+    // Show loading while loading user's saved data
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        backgroundColor: Color(0xFF181A20),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(color: Colors.tealAccent),
+            SizedBox(height: 16),
+            Text(
+              'Loading your saved progress...',
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      // Load user's saved data from Firebase
+      final loadedTracker = await _firestoreService.getHabitTracker();
+      
+      Navigator.of(context).pop(); // Close loading dialog
+      
+      if (loadedTracker != null) {
+        setState(() {
+          tracker = loadedTracker;
+          _onboarding = false;
+        });
+        _animationController.forward();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Welcome back! Your progress has been loaded.'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      } else {
+        // No saved data found, start onboarding
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No saved progress found. Let\'s start fresh!'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        WidgetsBinding.instance.addPostFrameCallback((_) => _showInitialHabitCountDialog());
+      }
+      
+      setState(() {
+        // Refresh the UI to show sign out button
+      });
+    } catch (e) {
+      Navigator.of(context).pop(); // Close loading dialog
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to load progress: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      
+      // Fallback to onboarding
+      WidgetsBinding.instance.addPostFrameCallback((_) => _showInitialHabitCountDialog());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (_onboarding || tracker == null) {
+    if (_isLoadingData || (_onboarding && tracker == null)) {
       return const Scaffold(
         backgroundColor: Color(0xFF181A20),
         body: Center(
@@ -458,7 +750,10 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Habit Tracker', style: TextStyle(color: Colors.white)),
+        title: GestureDetector(
+          onTap: _handleDevModeTap,
+          child: const Text('Habit Tracker', style: TextStyle(color: Colors.white)),
+        ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -474,16 +769,36 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.redAccent),
-            tooltip: 'Reset',
-            onPressed: _reset,
-          ),
-          IconButton(
-            icon: const Icon(Icons.skip_next, color: Colors.tealAccent),
-            tooltip: 'Next Day',
-            onPressed: _nextDay,
-          ),
+          if (_devMode) ...[
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.redAccent),
+              tooltip: 'Reset (Dev Mode)',
+              onPressed: _reset,
+            ),
+            IconButton(
+              icon: const Icon(Icons.skip_next, color: Colors.tealAccent),
+              tooltip: 'Next Day (Dev Mode)',
+              onPressed: _nextDay,
+            ),
+            IconButton(
+              icon: const Icon(Icons.developer_mode, color: Colors.orange),
+              tooltip: 'Dev Mode Active',
+              onPressed: _toggleDevMode,
+            ),
+          ],
+          // Show sign up button if not authenticated, sign out if authenticated
+          if (_authService.currentUser == null)
+            IconButton(
+              icon: const Icon(Icons.cloud_upload, color: Colors.tealAccent),
+              tooltip: 'Save Progress',
+              onPressed: _showSaveProgressDialog,
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.logout, color: Colors.grey),
+              tooltip: 'Sign Out',
+              onPressed: _signOut,
+            ),
         ],
       ),
       extendBodyBehindAppBar: true,
