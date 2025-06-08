@@ -4,6 +4,7 @@ import 'habit_model.dart';
 import 'streak_notification.dart';
 import 'stats_screen.dart';
 import 'screens/auth_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'services/auth_service.dart';
 import 'services/firestore_service.dart';
 import 'firebase_options.dart';
@@ -66,6 +67,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
   final _authService = AuthService();
   final _firestoreService = FirestoreService();
   bool _isLoadingData = true;
+  String _userName = '';
   final List<String> _preMadeHabits = [
     'Running',
     'Reading',
@@ -149,7 +151,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
     setState(() {
       _isLoadingData = false;
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _showInitialHabitCountDialog());
+    // Onboarding will be shown in the build method when _onboarding is true
   }
 
   Future<void> _saveData() async {
@@ -178,6 +180,20 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
       _animationController.forward(from: 0.0);
       _lastOpenedDate = _simulatedToday;
     }
+  }
+
+  void _onOnboardingComplete(HabitTracker newTracker, String userName) {
+    setState(() {
+      tracker = newTracker;
+      _userName = userName;
+      _onboarding = false;
+    });
+    // Save initial data to Firebase
+    _saveData();
+    // Trigger animation after onboarding is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _animationController.forward(from: 0.0);
+    });
   }
 
   void _showInitialHabitCountDialog() async {
@@ -522,13 +538,13 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
 
   void _reset() {
     setState(() {
-      tracker?.reset();
+      tracker = null;
       _simulatedToday = DateTime.now();
       _onboarding = true;
       _initialHabitCount = null;
       _selectedHabits = [];
       _prevCanAddHabit = false;
-      WidgetsBinding.instance.addPostFrameCallback((_) => _showInitialHabitCountDialog());
+      _userName = '';
     });
   }
 
@@ -726,7 +742,9 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
             backgroundColor: Colors.orange,
           ),
         );
-        WidgetsBinding.instance.addPostFrameCallback((_) => _showInitialHabitCountDialog());
+        setState(() {
+          _onboarding = true;
+        });
       }
       
       setState(() {
@@ -743,18 +761,26 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
       );
       
       // Fallback to onboarding
-      WidgetsBinding.instance.addPostFrameCallback((_) => _showInitialHabitCountDialog());
+      setState(() {
+        _onboarding = true;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoadingData || (_onboarding && tracker == null)) {
+    if (_isLoadingData) {
       return const Scaffold(
         backgroundColor: Color(0xFF181A20),
         body: Center(
           child: CircularProgressIndicator(color: Colors.tealAccent),
         ),
+      );
+    }
+    
+    if (_onboarding && tracker == null) {
+      return OnboardingScreen(
+        onOnboardingComplete: _onOnboardingComplete,
       );
     }
     

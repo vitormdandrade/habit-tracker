@@ -1,0 +1,12 @@
+## ROADMAP 
+- Complete onboarding flow
+- Habit levels
+- Tiers & Achievements
+- Improve Main UI 
+- Branding
+- Improve notifications
+- Implement Android 
+- Implement iOS
+- Increase Habits List and Custom Habits 
+- Habit Onboarding  
+- Push Notifications 
