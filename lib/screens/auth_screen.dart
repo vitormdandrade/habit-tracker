@@ -198,21 +198,25 @@ class _AuthScreenState extends State<AuthScreen> {
                         width: 1,
                       ),
                     ),
-                    child: const Icon(
-                      Icons.trending_up,
-                      size: 48,
-                      color: Colors.tealAccent,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(40),
+                      child: Image.asset(
+                        'logo/gradually_logo.png',
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
                   
-                  Text(
-                    'Habit Tracker',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w500,
+                  const Text(
+                    'Gradually',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
                       color: Colors.white,
-                      letterSpacing: 0.5,
+                      fontFamily: 'Aleo',
                     ),
                   ),
                   const SizedBox(height: 8),

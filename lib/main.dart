@@ -23,7 +23,7 @@ class HabitTrackerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Habit Tracker',
+      title: 'Gradually',
       theme: ThemeData(
         colorScheme: ColorScheme.dark(
           primary: Colors.tealAccent,
@@ -32,15 +32,15 @@ class HabitTrackerApp extends StatelessWidget {
           surface: Color(0xFF181A20),
         ),
         useMaterial3: true,
-        fontFamily: 'Montserrat',
+        fontFamily: 'Aleo',
         scaffoldBackgroundColor: const Color(0xFF111217),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF181A20),
           elevation: 0,
         ),
         textTheme: const TextTheme(
-          headlineMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.w400, fontFamily: 'Montserrat', letterSpacing: 0.2, fontSize: 18),
-          bodyMedium: TextStyle(color: Colors.white60, fontFamily: 'Montserrat', fontWeight: FontWeight.w300, letterSpacing: 0.1, fontSize: 13),
+          headlineMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.w400, fontFamily: 'Aleo', letterSpacing: 0.2, fontSize: 18),
+          bodyMedium: TextStyle(color: Colors.white60, fontFamily: 'Aleo', fontWeight: FontWeight.w300, letterSpacing: 0.1, fontSize: 13),
         ),
       ),
       home: const HabitHomePage(),
@@ -209,7 +209,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
             color: Colors.white,
             fontWeight: FontWeight.w400,
             fontSize: 16,
-            fontFamily: 'Montserrat',
+            fontFamily: 'Aleo',
             letterSpacing: 0.2,
           ),
         ),
@@ -222,7 +222,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                 color: Colors.white60,
                 fontWeight: FontWeight.w300,
                 fontSize: 12,
-                fontFamily: 'Montserrat',
+                fontFamily: 'Aleo',
                 letterSpacing: 0.1,
               ),
               textAlign: TextAlign.center,
@@ -255,7 +255,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                       minimumSize: const Size(38, 38),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       textStyle: const TextStyle(
-                        fontFamily: 'Montserrat',
+                        fontFamily: 'Aleo',
                         fontWeight: FontWeight.w400,
                         fontSize: 14,
                         letterSpacing: 0.2,
@@ -295,7 +295,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                 color: Colors.white,
                 fontWeight: FontWeight.w400,
                 fontSize: 16,
-                fontFamily: 'Montserrat',
+                fontFamily: 'Aleo',
                 letterSpacing: 0.2,
               ),
             ),
@@ -308,7 +308,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                     color: Colors.white60,
                     fontWeight: FontWeight.w300,
                     fontSize: 12,
-                    fontFamily: 'Montserrat',
+                    fontFamily: 'Aleo',
                     letterSpacing: 0.1,
                   ),
                   textAlign: TextAlign.center,
@@ -333,7 +333,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                           color: Colors.white,
                           fontWeight: FontWeight.w400,
                           fontSize: 13,
-                          fontFamily: 'Montserrat',
+                          fontFamily: 'Aleo',
                           letterSpacing: 0.2,
                         ),
                       ),
@@ -358,7 +358,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                     color: Colors.tealAccent,
                     fontWeight: FontWeight.w400,
                     fontSize: 13,
-                    fontFamily: 'Montserrat',
+                    fontFamily: 'Aleo',
                     letterSpacing: 0.2,
                   ),
                 ),
@@ -814,14 +814,14 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
       appBar: AppBar(
         title: GestureDetector(
           onTap: _handleDevModeTap,
-          child: const Text('Habit Tracker', style: TextStyle(color: Colors.white)),
+          child: const Text('Gradually', style: TextStyle(color: Colors.white)),
         ),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            color: Colors.grey[900]?.withOpacity(0.5),
+            color: Theme.of(context).colorScheme.surface,
             border: Border(
               bottom: BorderSide(
                 color: Colors.white.withOpacity(0.1),
@@ -850,14 +850,23 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
           ],
           // Show sign in button if not authenticated, sign out if authenticated
           if (_authService.currentUser == null)
-            TextButton(
-              onPressed: _showSaveProgressDialog,
-              child: const Text(
-                'Sign In',
-                style: TextStyle(
-                  color: Colors.tealAccent,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
+            Container(
+              margin: const EdgeInsets.only(right: 16), // Consistent horizontal padding
+              child: TextButton(
+                onPressed: _showSaveProgressDialog,
+                style: TextButton.styleFrom(
+                  side: BorderSide(color: Colors.grey[600]!, width: 1), // Thin gray border
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Sign In',
+                  style: TextStyle(
+                    color: Colors.tealAccent,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             )
@@ -883,265 +892,276 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
         ),
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              const SizedBox(height: 80), // Add space for the app bar
-              AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, child) {
-                  return Transform.translate(
-                    offset: Offset(0, 40 * (1 - Curves.easeOutCubic.transform(_animationController.value))),
-                    child: Opacity(
-                      opacity: Curves.easeOutCubic.transform(_animationController.value),
-                      child: child,
-                    ),
-                  );
-                },
-                child: Stack(
-                  children: [
-                    Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        width: 160,
-                        height: 160,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.grey[900]?.withOpacity(0.5),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.1),
-                            width: 1,
-                          ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 80), // Add space for the app bar
+                  AnimatedBuilder(
+                    animation: _animationController,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset: Offset(0, 40 * (1 - Curves.easeOutCubic.transform(_animationController.value))),
+                        child: Opacity(
+                          opacity: Curves.easeOutCubic.transform(_animationController.value),
+                          child: child,
                         ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        height: 160,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Row(
+                      );
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Date above the streak counter
+                        Text(
+                          'Day ${tracker != null && tracker!.startDate != null ? (DateTime.now().difference(tracker!.startDate!).inDays + 1) : 1}',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11, color: Colors.grey[600]),
+                        ),
+                        const SizedBox(height: 8),
+                        // Main streak counter with rectangular background
+                        Container(
+                          width: 200, // 2x wider than tall
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface, // Same as bottom bar
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.1),
+                              width: 1,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start, // Left align content
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                _buildStyledEmoji('🔥', fontSize: 28),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '${tracker!.streak}',
-                                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white.withOpacity(0.9),
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                                AnimatedOpacity(
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                  opacity: tracker!.hasCompletedEnoughForStreak(today) ? 1.0 : 0.0,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 4.0),
-                                    child: Text(
-                                      '+1',
+                                Row(
+                                  children: [
+                                    _buildStyledEmoji('🔥', fontSize: 24),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      '${tracker!.streak}',
                                       style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                        fontSize: 16,
+                                        fontSize: 24,
                                         fontWeight: FontWeight.w500,
-                                        color: Colors.white.withOpacity(0.7),
+                                        color: Colors.white.withOpacity(0.9),
                                         letterSpacing: 0.8,
                                       ),
                                     ),
+                                    AnimatedOpacity(
+                                      duration: const Duration(milliseconds: 300),
+                                      curve: Curves.easeInOut,
+                                      opacity: tracker!.hasCompletedEnoughForStreakContinuation(today) ? 1.0 : 0.0,
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 4.0),
+                                        child: Text(
+                                          '+1',
+                                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white.withOpacity(0.7),
+                                            letterSpacing: 0.8,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Streak',
+                                  style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w300,
+                                    letterSpacing: 0.3,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Streak',
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 12,
-                                fontWeight: FontWeight.w300,
-                                letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4), // Reduced from 10 to 4 to match habit module spacing
+                  Expanded(
+                    child: AnimatedBuilder(
+                      animation: _animationController,
+                      builder: (context, child) {
+                        final delayedValue = Curves.easeOutCubic.transform(
+                          (_animationController.value - 0.4).clamp(0.0, 1.0) / 0.6
+                        );
+                        return Transform.translate(
+                          offset: Offset(0, 40 * (1 - delayedValue)),
+                          child: Opacity(
+                            opacity: delayedValue,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: ListView.builder(
+                        itemCount: tracker!.habits.length,
+                        itemBuilder: (context, index) {
+                          final habit = tracker!.habits[index];
+                          final todayEntry = habit.history.firstWhere(
+                            (h) => HabitTracker.isSameDay(h.date, today),
+                            orElse: () => HabitDay(date: today, completed: false),
+                          );
+                          final last5Days = List.generate(5, (i) => today.subtract(Duration(days: 4 - i))).reversed.toList();
+                          return Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4), // Reduced from 8 to 4
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface, // Same as bottom bar
+                              borderRadius: BorderRadius.circular(8), // Reduced from 16 to 8
+                              border: Border.all(
+                                color: todayEntry.completed ? Colors.tealAccent : Colors.white.withOpacity(0.1),
+                                width: todayEntry.completed ? 2.5 : 1,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.grey[900]?.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.1),
-                            width: 1,
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          child: Row(
-                            children: [
-                              _buildStyledEmoji('⭐', fontSize: 13),
-                              const SizedBox(width: 2),
-                              Text(
-                                '${tracker!.points}',
-                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  fontSize: 13,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w400,
-                                  letterSpacing: 0.2,
-                                ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Reduced horizontal padding to match vertical
+                              leading: Checkbox(
+                                value: todayEntry.completed,
+                                onChanged: (value) => _toggleHabit(index, value),
+                                activeColor: Colors.tealAccent,
+                                checkColor: Colors.black,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                               ),
-                              const SizedBox(width: 2),
-                              Text(
-                                'Points',
-                                style: TextStyle(
-                                  color: Colors.grey[500],
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w300,
-                                  letterSpacing: 0.1,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, child) {
-                  final delayedValue = Curves.easeOutCubic.transform(
-                    (_animationController.value - 0.2).clamp(0.0, 1.0) / 0.8
-                  );
-                  return Transform.translate(
-                    offset: Offset(0, 40 * (1 - delayedValue)),
-                    child: Opacity(
-                      opacity: delayedValue,
-                      child: child,
-                    ),
-                  );
-                },
-                child: Text(
-                  'Date: ${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11, color: Colors.grey[600]),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: AnimatedBuilder(
-                  animation: _animationController,
-                  builder: (context, child) {
-                    final delayedValue = Curves.easeOutCubic.transform(
-                      (_animationController.value - 0.4).clamp(0.0, 1.0) / 0.6
-                    );
-                    return Transform.translate(
-                      offset: Offset(0, 40 * (1 - delayedValue)),
-                      child: Opacity(
-                        opacity: delayedValue,
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: ListView.builder(
-                    itemCount: tracker!.habits.length,
-                    itemBuilder: (context, index) {
-                      final habit = tracker!.habits[index];
-                      final todayEntry = habit.history.firstWhere(
-                        (h) => HabitTracker.isSameDay(h.date, today),
-                        orElse: () => HabitDay(date: today, completed: false),
-                      );
-                      final last5Days = List.generate(5, (i) => today.subtract(Duration(days: 4 - i))).reversed.toList();
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[900]?.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.1),
-                            width: 1,
-                          ),
-                        ),
-                        child: ListTile(
-                          leading: Checkbox(
-                            value: todayEntry.completed,
-                            onChanged: (value) => _toggleHabit(index, value),
-                            activeColor: Colors.tealAccent,
-                            checkColor: Colors.black,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                          ),
-                          title: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    _buildStyledEmoji(_habitEmojis[habit.name] ?? '', fontSize: 16),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        habit.name,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 13,
-                                          letterSpacing: 0.2,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Row(
+                              title: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Row(
                                       children: [
-                                        _buildStyledEmoji('🔥', fontSize: 10),
-                                        Text(
-                                          '${habit.streak}  •  ',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w300,
-                                            letterSpacing: 0.1,
-                                          ),
-                                        ),
-                                        _buildStyledEmoji('⭐', fontSize: 10),
-                                        Text(
-                                          '${habit.points}',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w300,
-                                            letterSpacing: 0.1,
+                                        _buildStyledEmoji(_habitEmojis[habit.name] ?? '', fontSize: 16),
+                                        const SizedBox(width: 8), // Same distance as between emoji and title
+                                        Expanded(
+                                          child: Text(
+                                            habit.name,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 13,
+                                              letterSpacing: 0.2,
+                                            ),
                                           ),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(width: 8),
-                                    for (final d in last5Days)
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                                        child: _buildDayStatusDot(habit, d),
-                                      ),
-                                  ],
-                                ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // Streak and points counters
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            _buildStyledEmoji('🔥', fontSize: 10),
+                                            Text(
+                                              '${habit.streak}  •  ',
+                                              style: TextStyle(
+                                                color: Colors.grey[600],
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w300,
+                                                letterSpacing: 0.1,
+                                              ),
+                                            ),
+                                            _buildStyledEmoji('⭐', fontSize: 10),
+                                            Text(
+                                              '${habit.points}',
+                                              style: TextStyle(
+                                                color: Colors.grey[600],
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w300,
+                                                letterSpacing: 0.1,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        // 5-day dots
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            for (final d in last5Days)
+                                              Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                                                child: _buildDayStatusDot(habit, d),
+                                              ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                              subtitle: null,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              // Points counter positioned in top right corner
+              Positioned(
+                top: 80, // Below app bar
+                right: 0,
+                child: AnimatedBuilder(
+                  animation: _animationController,
+                  builder: (context, child) {
+                    return Transform.translate(
+                      offset: Offset(0, 40 * (1 - Curves.easeOutCubic.transform(_animationController.value))),
+                      child: Opacity(
+                        opacity: Curves.easeOutCubic.transform(_animationController.value),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface, // Same as bottom bar
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.1),
+                        width: 1,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildStyledEmoji('⭐', fontSize: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${tracker!.points}',
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w400,
+                              letterSpacing: 0.2,
+                            ),
                           ),
-                          subtitle: null,
-                        ),
-                      );
-                    },
+                          const SizedBox(width: 6),
+                          Text(
+                            'Points',
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 12,
+                              fontWeight: FontWeight.w300,
+                              letterSpacing: 0.1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -1177,20 +1197,26 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
 
   Widget _buildDayStatusDot(Habit habit, DateTime day) {
     final entries = habit.history.where((h) => HabitTracker.isSameDay(h.date, day));
-    // All icons same size
-    const double iconSize = 13;
+    // Smaller dots without icons
+    const double dotSize = 6;
     if (entries.isEmpty || !entries.first.completed) {
-      return Icon(
-        Icons.radio_button_unchecked,
-        color: Colors.grey,
-        size: iconSize,
+      return Container(
+        width: dotSize,
+        height: dotSize,
+        decoration: BoxDecoration(
+          color: Colors.grey.withOpacity(0.3),
+          shape: BoxShape.circle,
+        ),
       );
     }
-    // Only show check if completed
-    return Icon(
-      Icons.check_circle,
-      color: Colors.tealAccent,
-      size: iconSize,
+    // Completed day - teal dot
+    return Container(
+      width: dotSize,
+      height: dotSize,
+      decoration: BoxDecoration(
+        color: Colors.tealAccent,
+        shape: BoxShape.circle,
+      ),
     );
   }
 }

@@ -1,4 +1,4 @@
-# Habit Tracker App Guide
+# Gradually App Guide
 
 ## Core Concepts
 

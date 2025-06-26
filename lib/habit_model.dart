@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class Habit {
   final String id;
   final String name;
@@ -185,6 +183,62 @@ class HabitTracker {
     
     // For multiple habits, can miss at most 1
     return completedCount >= habits.length - 1;
+  }
+
+  /// Returns true if the user has completed enough habits for the streak to continue
+  /// This considers the rule that the same habit cannot be missed two days in a row
+  bool hasCompletedEnoughForStreakContinuation(DateTime day) {
+    if (habits.isEmpty) return false;
+    
+    final today = day;
+    final yesterday = today.subtract(const Duration(days: 1));
+    
+    int completedCount = 0;
+    List<Habit> missedToday = [];
+    
+    for (final habit in habits) {
+      final todayEntry = habit.history.where((h) => isSameDay(h.date, today)).toList();
+      final isCompletedToday = todayEntry.isNotEmpty ? todayEntry.first.completed : false;
+      
+      if (isCompletedToday) {
+        completedCount++;
+      } else {
+        missedToday.add(habit);
+      }
+    }
+    
+    // If no habits completed, streak cannot continue
+    if (completedCount == 0) {
+      return false;
+    }
+    
+    // If only 1 habit, must complete it
+    if (habits.length == 1) {
+      return completedCount == 1;
+    }
+    
+    // For multiple habits, can miss at most 1, but not the same habit two days in a row
+    if (missedToday.length == 0) {
+      return true; // All habits completed
+    } else if (missedToday.length == 1) {
+      final missedHabit = missedToday.first;
+      // Check if the missed habit was also missed yesterday
+      final anyHistoryYesterday = habits.any((habit) => habit.history.any((h) => isSameDay(h.date, yesterday)));
+      
+      if (anyHistoryYesterday) {
+        final yesterdayEntry = missedHabit.history.where((h) => isSameDay(h.date, yesterday)).toList();
+        final wasMissedYesterday = yesterdayEntry.isEmpty || !yesterdayEntry.first.completed;
+        
+        // If the habit was missed yesterday too, streak cannot continue
+        if (wasMissedYesterday) {
+          return false;
+        }
+      }
+      return true; // Can miss this habit today since it wasn't missed yesterday
+    } else {
+      // Missing more than 1 habit, streak cannot continue
+      return false;
+    }
   }
 
   static bool isSameDay(DateTime a, DateTime b) {
