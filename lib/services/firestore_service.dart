@@ -41,6 +41,8 @@ class FirestoreService {
             history: history,
             streak: habitData['streak'] ?? 0,
             points: habitData['points'] ?? 0,
+            solidLevel: habitData['solidLevel'] ?? 0,
+            consecutiveMisses: habitData['consecutiveMisses'] ?? 0,
           ));
         }
       }
@@ -97,6 +99,8 @@ class FirestoreService {
           'history': historyData,
           'streak': habit.streak,
           'points': habit.points,
+          'solidLevel': habit.solidLevel,
+          'consecutiveMisses': habit.consecutiveMisses,
         });
       }
 
@@ -196,6 +200,8 @@ class FirestoreService {
             history: history,
             streak: habitData['streak'] ?? 0,
             points: habitData['points'] ?? 0,
+            solidLevel: habitData['solidLevel'] ?? 0,
+            consecutiveMisses: habitData['consecutiveMisses'] ?? 0,
           ));
         }
       }

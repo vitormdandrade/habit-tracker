@@ -1,9 +1,7 @@
 ## ROADMAP 
+- Fix Authentication
 - Complete onboarding flow
-- Habit levels
 - Tiers & Achievements
-- Improve Main UI 
-- Branding
 - Improve notifications
 - Implement Android 
 - Implement iOS

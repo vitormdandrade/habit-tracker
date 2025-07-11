@@ -21,7 +21,7 @@ class StatsScreen extends StatelessWidget {
             color: Colors.white,
             fontWeight: FontWeight.w400,
             fontSize: 18,
-            fontFamily: 'Montserrat',
+            fontFamily: 'Aleo',
             letterSpacing: 0.2,
           ),
         ),
@@ -154,7 +154,7 @@ class StatsScreen extends StatelessWidget {
                     color: Colors.grey[400],
                     fontSize: 11,
                     fontWeight: FontWeight.w300,
-                    fontFamily: 'Montserrat',
+                    fontFamily: 'Aleo',
                   ),
                 ),
               ),
@@ -167,7 +167,7 @@ class StatsScreen extends StatelessWidget {
               color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              fontFamily: 'Montserrat',
+              fontFamily: 'Aleo',
             ),
           ),
         ],
@@ -217,7 +217,7 @@ class StatsScreen extends StatelessWidget {
           style: TextStyle(
             color: Colors.grey,
             fontSize: 14,
-            fontFamily: 'Montserrat',
+            fontFamily: 'Aleo',
           ),
         ),
       );
@@ -254,7 +254,7 @@ class StatsScreen extends StatelessWidget {
                   style: const TextStyle(
                     color: Colors.grey,
                     fontSize: 10,
-                    fontFamily: 'Montserrat',
+                    fontFamily: 'Aleo',
                   ),
                 );
               },
@@ -270,7 +270,7 @@ class StatsScreen extends StatelessWidget {
                   style: const TextStyle(
                     color: Colors.grey,
                     fontSize: 10,
-                    fontFamily: 'Montserrat',
+                    fontFamily: 'Aleo',
                   ),
                 );
               },
@@ -324,7 +324,7 @@ class StatsScreen extends StatelessWidget {
           style: TextStyle(
             color: Colors.grey,
             fontSize: 14,
-            fontFamily: 'Montserrat',
+            fontFamily: 'Aleo',
           ),
         ),
       );
@@ -361,7 +361,7 @@ class StatsScreen extends StatelessWidget {
                   style: const TextStyle(
                     color: Colors.grey,
                     fontSize: 10,
-                    fontFamily: 'Montserrat',
+                    fontFamily: 'Aleo',
                   ),
                 );
               },
@@ -377,7 +377,7 @@ class StatsScreen extends StatelessWidget {
                   style: const TextStyle(
                     color: Colors.grey,
                     fontSize: 10,
-                    fontFamily: 'Montserrat',
+                    fontFamily: 'Aleo',
                   ),
                 );
               },
