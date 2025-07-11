@@ -4,8 +4,23 @@ class Habit {
   final List<HabitDay> history;
   int streak;
   int points;
+  int solidLevel; // 0 = normal, 1+ = solid level
+  int consecutiveMisses; // Track consecutive misses for solid habits
 
-  Habit({required this.id, required this.name, required this.history, this.streak = 0, this.points = 0});
+  Habit({
+    required this.id, 
+    required this.name, 
+    required this.history, 
+    this.streak = 0, 
+    this.points = 0,
+    this.solidLevel = 0,
+    this.consecutiveMisses = 0,
+  });
+
+  bool get isSolid => solidLevel > 0;
+  
+  // Get the number of consecutive misses allowed before losing solid status
+  int get allowedMisses => solidLevel * 3;
 }
 
 class HabitDay {
@@ -38,6 +53,59 @@ class HabitTracker {
     startDate ??= DateTime.now();
   }
 
+  /// Check if a habit has been active for the last 50 days
+  bool _isHabitActiveForLast50Days(Habit habit, DateTime currentDay) {
+    final fiftyDaysAgo = currentDay.subtract(const Duration(days: 50));
+    
+    for (int i = 0; i < 50; i++) {
+      final day = currentDay.subtract(Duration(days: i));
+      final dayEntry = habit.history.where((h) => isSameDay(h.date, day)).toList();
+      
+      // If no entry for this day, habit wasn't active
+      if (dayEntry.isEmpty) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  /// Update solid levels when streak reaches multiples of 50
+  void _updateSolidLevels(DateTime currentDay) {
+    if (streak % 50 != 0) return; // Only update at multiples of 50
+    
+    for (final habit in habits) {
+      if (_isHabitActiveForLast50Days(habit, currentDay)) {
+        if (habit.solidLevel == 0) {
+          // Normal habit becomes Solid Level 1
+          habit.solidLevel = 1;
+          habit.consecutiveMisses = 0;
+        } else {
+          // Solid habit goes up one level
+          habit.solidLevel++;
+          habit.consecutiveMisses = 0;
+        }
+      }
+    }
+  }
+
+  /// Update consecutive misses for solid habits
+  void _updateSolidHabitMisses(Habit habit, bool wasCompletedToday) {
+    if (habit.isSolid) {
+      if (wasCompletedToday) {
+        habit.consecutiveMisses = 0;
+      } else {
+        habit.consecutiveMisses++;
+        
+        // Check if habit should lose solid status
+        if (habit.consecutiveMisses >= habit.allowedMisses) {
+          habit.solidLevel = 0;
+          habit.consecutiveMisses = 0;
+        }
+      }
+    }
+  }
+
   /// Call this at the end of each day to update the streak.
   /// Returns true if forced habit removal is required.
   bool updateStreak(DateTime day) {
@@ -49,6 +117,7 @@ class HabitTracker {
     List<Habit> missedToday = [];
     List<Habit> missedYesterday = [];
     int completedToday = 0;
+    int nonSolidCompletedToday = 0;
 
     for (final habit in habits) {
       final todayEntry = habit.history.where((h) => isSameDay(h.date, today)).toList();
@@ -59,7 +128,12 @@ class HabitTracker {
 
       if (!isCompletedToday) missedToday.add(habit);
       if (!isCompletedYesterday) missedYesterday.add(habit);
-      if (isCompletedToday) completedToday++;
+      if (isCompletedToday) {
+        completedToday++;
+        if (!habit.isSolid) {
+          nonSolidCompletedToday++;
+        }
+      }
 
       // Update per-habit streak and points
       if (isCompletedToday) {
@@ -68,6 +142,9 @@ class HabitTracker {
       } else {
         habit.streak = 0;
       }
+
+      // Update solid habit misses
+      _updateSolidHabitMisses(habit, isCompletedToday);
     }
 
     // Add points for each completed habit today
@@ -76,14 +153,18 @@ class HabitTracker {
     bool streakWasBroken = false;
     bool reached14 = streak >= 14;
 
-    // If no habits completed, streak cannot increase
-    if (completedToday == 0) {
+    // Check if we have enough completed habits for streak continuation
+    // Solid habits don't count against the streak
+    List<Habit> nonSolidMissedToday = missedToday.where((h) => !h.isSolid).toList();
+
+    // If no non-solid habits completed, streak cannot increase
+    if (nonSolidCompletedToday == 0) {
       if (!reached14) streakBreaks++;
       streak = 0;
       streakWasBroken = true;
     } else if (n == 1) {
-      // If only 1 habit, must complete it
-      if (missedToday.isEmpty) {
+      // If only 1 habit, must complete it (unless it's solid)
+      if (missedToday.isEmpty || (missedToday.length == 1 && missedToday.first.isSolid)) {
         streak++;
       } else {
         if (!reached14) streakBreaks++;
@@ -91,10 +172,10 @@ class HabitTracker {
         streakWasBroken = true;
       }
     } else {
-      // If more than 1 habit, can miss at most 1, but not the same habit two days in a row
-      if (missedToday.length == 0 || missedToday.length == 1) {
-        if (missedToday.length == 1) {
-          final missedHabit = missedToday.first;
+      // If more than 1 habit, can miss at most 1 non-solid habit, but not the same habit two days in a row
+      if (nonSolidMissedToday.length == 0 || nonSolidMissedToday.length == 1) {
+        if (nonSolidMissedToday.length == 1) {
+          final missedHabit = nonSolidMissedToday.first;
           // Only apply the missed-yesterday check if any habit has a history for yesterday
           final anyHistoryYesterday = habits.any((habit) => habit.history.any((h) => isSameDay(h.date, yesterday)));
           if (anyHistoryYesterday) {
@@ -124,6 +205,9 @@ class HabitTracker {
     if (streak >= 14) {
       streakBreaks = 0;
     }
+
+    // Update solid levels when streak reaches multiples of 50
+    _updateSolidLevels(today);
 
     // Update max streak
     if (streak > maxStreak) {
@@ -187,6 +271,7 @@ class HabitTracker {
 
   /// Returns true if the user has completed enough habits for the streak to continue
   /// This considers the rule that the same habit cannot be missed two days in a row
+  /// Solid habits don't count against the streak
   bool hasCompletedEnoughForStreakContinuation(DateTime day) {
     if (habits.isEmpty) return false;
     
@@ -195,6 +280,7 @@ class HabitTracker {
     
     int completedCount = 0;
     List<Habit> missedToday = [];
+    List<Habit> nonSolidMissedToday = [];
     
     for (final habit in habits) {
       final todayEntry = habit.history.where((h) => isSameDay(h.date, today)).toList();
@@ -204,24 +290,27 @@ class HabitTracker {
         completedCount++;
       } else {
         missedToday.add(habit);
+        if (!habit.isSolid) {
+          nonSolidMissedToday.add(habit);
+        }
       }
     }
     
-    // If no habits completed, streak cannot continue
+    // If no non-solid habits completed, streak cannot continue
     if (completedCount == 0) {
       return false;
     }
     
-    // If only 1 habit, must complete it
+    // If only 1 habit, must complete it (unless it's solid)
     if (habits.length == 1) {
-      return completedCount == 1;
+      return completedCount == 1 || (missedToday.length == 1 && missedToday.first.isSolid);
     }
     
-    // For multiple habits, can miss at most 1, but not the same habit two days in a row
-    if (missedToday.length == 0) {
-      return true; // All habits completed
-    } else if (missedToday.length == 1) {
-      final missedHabit = missedToday.first;
+    // For multiple habits, can miss at most 1 non-solid habit, but not the same habit two days in a row
+    if (nonSolidMissedToday.length == 0) {
+      return true; // All non-solid habits completed
+    } else if (nonSolidMissedToday.length == 1) {
+      final missedHabit = nonSolidMissedToday.first;
       // Check if the missed habit was also missed yesterday
       final anyHistoryYesterday = habits.any((habit) => habit.history.any((h) => isSameDay(h.date, yesterday)));
       
@@ -236,9 +325,33 @@ class HabitTracker {
       }
       return true; // Can miss this habit today since it wasn't missed yesterday
     } else {
-      // Missing more than 1 habit, streak cannot continue
+      // Missing more than 1 non-solid habit, streak cannot continue
       return false;
     }
+  }
+
+  /// Returns the number of habits completed on a specific day
+  int getCompletedHabitsForDay(DateTime day) {
+    int completedCount = 0;
+    for (final habit in habits) {
+      final dayEntry = habit.history.where((h) => isSameDay(h.date, day)).toList();
+      if (dayEntry.isNotEmpty && dayEntry.first.completed) {
+        completedCount++;
+      }
+    }
+    return completedCount;
+  }
+
+  /// Returns the number of habits completed yesterday
+  int getCompletedHabitsYesterday() {
+    final yesterday = DateTime.now().subtract(const Duration(days: 1));
+    return getCompletedHabitsForDay(yesterday);
+  }
+
+  /// Returns the number of habits completed on the day before the given date
+  int getCompletedHabitsForDayBefore(DateTime date) {
+    final dayBefore = date.subtract(const Duration(days: 1));
+    return getCompletedHabitsForDay(dayBefore);
   }
 
   static bool isSameDay(DateTime a, DateTime b) {

@@ -466,6 +466,13 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
         barrierDismissible: false,
         builder: (context) => StreakNotification(
           isStreakIncreased: tracker!.streak > previousStreak,
+          currentStreak: tracker!.streak,
+          previousStreak: previousStreak,
+          completedHabitsYesterday: tracker!.getCompletedHabitsForDayBefore(_simulatedToday),
+          totalHabits: tracker!.habits.length,
+          totalPoints: tracker!.points,
+          currentDate: _simulatedToday,
+          tracker: tracker!,
           onDismiss: () {
             setState(() {
               _isShowingStreakNotification = false;
@@ -1013,11 +1020,15 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                           return Container(
                             margin: const EdgeInsets.symmetric(vertical: 4), // Reduced from 8 to 4
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface, // Same as bottom bar
+                              color: habit.isSolid 
+                                  ? Colors.teal.withOpacity(0.2) 
+                                  : Theme.of(context).colorScheme.surface, // Teal background for solid habits
                               borderRadius: BorderRadius.circular(8), // Reduced from 16 to 8
                               border: Border.all(
-                                color: todayEntry.completed ? Colors.tealAccent : Colors.white.withOpacity(0.1),
-                                width: todayEntry.completed ? 2.5 : 1,
+                                color: habit.isSolid 
+                                    ? Colors.teal 
+                                    : (todayEntry.completed ? Colors.tealAccent : Colors.white.withOpacity(0.1)),
+                                width: habit.isSolid ? 2 : (todayEntry.completed ? 2.5 : 1),
                               ),
                             ),
                             child: ListTile(
@@ -1035,13 +1046,21 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                                   Expanded(
                                     child: Row(
                                       children: [
-                                        _buildStyledEmoji(_habitEmojis[habit.name] ?? '', fontSize: 16),
+                                        habit.isSolid 
+                                            ? Text(
+                                                _habitEmojis[habit.name] ?? '',
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.white,
+                                                ),
+                                              )
+                                            : _buildStyledEmoji(_habitEmojis[habit.name] ?? '', fontSize: 16),
                                         const SizedBox(width: 8), // Same distance as between emoji and title
                                         Expanded(
                                           child: Text(
                                             habit.name,
-                                            style: const TextStyle(
-                                              color: Colors.white,
+                                            style: TextStyle(
+                                              color: habit.isSolid ? Colors.white : Colors.white,
                                               fontWeight: FontWeight.w400,
                                               fontSize: 13,
                                               letterSpacing: 0.2,
@@ -1057,6 +1076,24 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                                       crossAxisAlignment: CrossAxisAlignment.end,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
+                                        // Solid level indicator
+                                        if (habit.isSolid)
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: Colors.teal,
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              'Solid ${habit.solidLevel}',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 8,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        if (habit.isSolid) const SizedBox(height: 2),
                                         // Streak and points counters
                                         Row(
                                           mainAxisSize: MainAxisSize.min,
