@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'habit_model.dart';
 import 'streak_notification.dart';
 import 'stats_screen.dart';
@@ -68,6 +69,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
   final _firestoreService = FirestoreService();
   bool _isLoadingData = true;
   String _userName = '';
+  User? _currentUser; // Track current user
   final List<String> _preMadeHabits = [
     'Running',
     'Reading',
@@ -121,18 +123,44 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
-    _loadUserData();
+    _setupAuthListener();
+  }
+
+  void _setupAuthListener() {
+    // Listen to authentication state changes
+    _authService.authStateChanges.listen((User? user) {
+      print('Auth state changed: ${user?.uid ?? 'null'}');
+      setState(() {
+        _currentUser = user;
+      });
+      
+      if (user != null) {
+        // User signed in, try to load their data
+        print('User signed in, loading data...');
+        _loadUserData();
+      } else {
+        // User signed out, reset to onboarding
+        print('User signed out, resetting to onboarding...');
+        setState(() {
+          tracker = null;
+          _onboarding = true;
+          _isLoadingData = false;
+        });
+      }
+    });
   }
 
   Future<void> _loadUserData() async {
     // Check if user is authenticated and try to load their data
     final user = _authService.currentUser;
+    print('_loadUserData called, user: ${user?.uid ?? 'null'}');
     
     if (user != null) {
       try {
         final loadedTracker = await _firestoreService.getHabitTracker();
         
         if (loadedTracker != null) {
+          print('Successfully loaded tracker with ${loadedTracker.habits.length} habits');
           setState(() {
             tracker = loadedTracker;
             _onboarding = false;
@@ -140,6 +168,8 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
           });
           _animationController.forward();
           return;
+        } else {
+          print('No tracker data found for user');
         }
       } catch (e) {
         print('Error loading user data: $e');
@@ -148,6 +178,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
     }
     
     // No authenticated user or no data - start local onboarding
+    print('Setting _isLoadingData to false, showing onboarding');
     setState(() {
       _isLoadingData = false;
     });
@@ -597,13 +628,16 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
   Future<void> _signOut() async {
     try {
       await _authService.signOut();
-      setState(() {
-        // Refresh the UI to show save progress button again
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Signed out successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error signing out: ${e.toString()}'),
+          content: Text('Failed to sign out: ${e.toString()}'),
           backgroundColor: Colors.red,
         ),
       );
@@ -684,7 +718,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
       );
       
       setState(() {
-        // Refresh the UI to show sign out button
+        _isLoadingData = false; // Make sure to set this to false
       });
     } catch (e) {
       Navigator.of(context).pop(); // Close loading dialog
@@ -731,6 +765,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
         setState(() {
           tracker = loadedTracker;
           _onboarding = false;
+          _isLoadingData = false; // Make sure to set this to false
         });
         _animationController.forward();
         
@@ -751,12 +786,9 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
         );
         setState(() {
           _onboarding = true;
+          _isLoadingData = false; // Make sure to set this to false
         });
       }
-      
-      setState(() {
-        // Refresh the UI to show sign out button
-      });
     } catch (e) {
       Navigator.of(context).pop(); // Close loading dialog
       
@@ -770,13 +802,17 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
       // Fallback to onboarding
       setState(() {
         _onboarding = true;
+        _isLoadingData = false; // Make sure to set this to false
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    print('Build called - _isLoadingData: $_isLoadingData, _onboarding: $_onboarding, tracker: ${tracker != null}, _currentUser: ${_currentUser?.uid ?? 'null'}');
+    
     if (_isLoadingData) {
+      print('Showing loading screen');
       return const Scaffold(
         backgroundColor: Color(0xFF181A20),
         body: Center(
@@ -786,11 +822,23 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
     }
     
     if (_onboarding && tracker == null) {
+      print('Showing onboarding screen');
       return OnboardingScreen(
         onOnboardingComplete: _onOnboardingComplete,
       );
     }
     
+    if (tracker == null) {
+      print('Tracker is null, showing loading screen');
+      return const Scaffold(
+        backgroundColor: Color(0xFF181A20),
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.tealAccent),
+        ),
+      );
+    }
+    
+    print('Showing main app screen');
     return Scaffold(
       body: _currentIndex == 0 ? _buildHabitsScreen(context) : StatsScreen(tracker: tracker!),
       bottomNavigationBar: BottomNavigationBar(
@@ -856,7 +904,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
             ),
           ],
           // Show sign in button if not authenticated, sign out if authenticated
-          if (_authService.currentUser == null)
+          if (_currentUser == null)
             Container(
               margin: const EdgeInsets.only(right: 16), // Consistent horizontal padding
               child: TextButton(
