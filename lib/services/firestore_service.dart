@@ -10,20 +10,27 @@ class FirestoreService {
 
   // Get user's habit tracker data
   Future<HabitTracker?> getHabitTracker() async {
-    if (_userId == null) return null;
+    if (_userId == null) {
+      print('No user ID available for getting habit tracker');
+      return null;
+    }
 
     try {
+      print('Attempting to load habit tracker for user: $_userId');
       final doc = await _firestore.collection('users').doc(_userId).get();
       
       if (!doc.exists) {
+        print('No user document found for user: $_userId');
         return null;
       }
 
+      print('User document found, parsing data...');
       final data = doc.data()!;
       
       // Convert habits from Firestore format
       final List<Habit> habits = [];
       if (data['habits'] != null) {
+        print('Found ${data['habits'].length} habits in user data');
         for (var habitData in data['habits']) {
           final List<HabitDay> history = [];
           if (habitData['history'] != null) {
@@ -45,11 +52,14 @@ class FirestoreService {
             consecutiveMisses: habitData['consecutiveMisses'] ?? 0,
           ));
         }
+      } else {
+        print('No habits found in user data');
       }
 
       // Convert daily stats from Firestore format
       final List<DayStats> dailyStats = [];
       if (data['dailyStats'] != null) {
+        print('Found ${data['dailyStats'].length} daily stats in user data');
         for (var statsData in data['dailyStats']) {
           dailyStats.add(DayStats(
             date: (statsData['date'] as Timestamp).toDate(),
@@ -57,6 +67,8 @@ class FirestoreService {
             points: statsData['points'] ?? 0,
           ));
         }
+      } else {
+        print('No daily stats found in user data');
       }
 
       final tracker = HabitTracker(habits: habits);
@@ -70,6 +82,7 @@ class FirestoreService {
           : DateTime.now();
       tracker.dailyStats = dailyStats;
 
+      print('Successfully loaded habit tracker with ${habits.length} habits');
       return tracker;
     } catch (e) {
       print('Error loading habit tracker: $e');
@@ -79,9 +92,13 @@ class FirestoreService {
 
   // Save user's habit tracker data
   Future<void> saveHabitTracker(HabitTracker tracker) async {
-    if (_userId == null) return;
+    if (_userId == null) {
+      print('No user ID available for saving habit tracker');
+      return;
+    }
 
     try {
+      print('Attempting to save habit tracker for user: $_userId');
       // Convert habits to Firestore format
       final List<Map<String, dynamic>> habitsData = [];
       for (var habit in tracker.habits) {
@@ -129,6 +146,7 @@ class FirestoreService {
       };
 
       await _firestore.collection('users').doc(_userId).set(data);
+      print('Successfully saved habit tracker with ${habitsData.length} habits');
     } catch (e) {
       print('Error saving habit tracker: $e');
       throw 'Failed to save data. Please try again.';
