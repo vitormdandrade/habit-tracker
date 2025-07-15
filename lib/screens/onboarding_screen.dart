@@ -446,10 +446,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                     ),
                     const SizedBox(height: 16),
                     TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
+                      onPressed: () async {
+                        final result = await Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => const AuthScreen(),
+                            builder: (context) => AuthScreen(
+                              onAuthSuccess: () {
+                                // Close the auth screen and return to main app
+                                Navigator.of(context).pop();
+                                // The main app will detect the auth state change
+                              },
+                            ),
                           ),
                         );
                       },

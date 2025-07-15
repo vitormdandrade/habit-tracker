@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'habit_model.dart';
 import 'streak_notification.dart';
 import 'stats_screen.dart';
@@ -122,6 +123,14 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
       duration: const Duration(milliseconds: 1500),
     );
     _loadUserData();
+    
+    // Listen to auth state changes
+    _authService.authStateChanges.listen((User? user) {
+      if (user != null && mounted) {
+        // User signed in, reload data
+        _loadUserData();
+      }
+    });
   }
 
   Future<void> _loadUserData() async {
