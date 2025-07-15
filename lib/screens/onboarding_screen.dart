@@ -348,21 +348,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
           Row(
             children: [
               Container(
-                width: 60,
+                width: 150,
                 height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.tealAccent.withOpacity(0.2),
-                ),
                 child: Image.asset(
-                  'logo/gradually_logo.png',
-                  width: 60,
+                  'logo/gradually_linear.png',
+                  width: 150,
                   height: 60,
                   fit: BoxFit.cover,
                 ),
               ),
               const SizedBox(width: 16),
               const Text(
-                'Gradually',
+                '',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w600,

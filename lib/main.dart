@@ -854,7 +854,11 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
       appBar: AppBar(
         title: GestureDetector(
           onTap: _handleDevModeTap,
-          child: const Text('Gradually', style: TextStyle(color: Colors.white)),
+          child: Image.asset(
+            'logo/gradually_linear.png',
+            height: 32,
+            fit: BoxFit.contain,
+          ),
         ),
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.surface,

@@ -1,5 +1,5 @@
 ## ROADMAP 
-- Fix Authentication
+- Fix welcome screen
 - Complete onboarding flow
 - Tiers & Achievements
 - Improve notifications
