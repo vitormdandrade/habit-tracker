@@ -197,6 +197,7 @@ class _StreakNotificationState extends State<StreakNotification>
                   flex: 3,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Welcome text
                       if (_currentTextIndex >= 0)
@@ -205,14 +206,14 @@ class _StreakNotificationState extends State<StreakNotification>
                           child: Text(
                             _texts[0],
                             style: const TextStyle(
-                              fontSize: 32,
+                              fontSize: 20,
                               fontWeight: FontWeight.w400,
                               color: Colors.white,
                               fontFamily: 'Aleo',
                               letterSpacing: 0.2,
                               decoration: TextDecoration.none,
                             ),
-                            textAlign: TextAlign.center,
+                            textAlign: TextAlign.left,
                           ),
                         ),
                       
@@ -225,14 +226,14 @@ class _StreakNotificationState extends State<StreakNotification>
                           child: Text(
                             _texts[1],
                             style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w400,
                               color: Colors.tealAccent,
                               fontFamily: 'Aleo',
                               letterSpacing: 0.2,
                               decoration: TextDecoration.none,
                             ),
-                            textAlign: TextAlign.center,
+                            textAlign: TextAlign.left,
                           ),
                         ),
                       
@@ -245,14 +246,14 @@ class _StreakNotificationState extends State<StreakNotification>
                           child: Text(
                             _texts[2],
                             style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w300,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w400,
                               color: Colors.white60,
                               fontFamily: 'Aleo',
                               letterSpacing: 0.1,
                               decoration: TextDecoration.none,
                             ),
-                            textAlign: TextAlign.center,
+                            textAlign: TextAlign.left,
                           ),
                         ),
                       
@@ -263,6 +264,7 @@ class _StreakNotificationState extends State<StreakNotification>
                         FadeTransition(
                           opacity: _fadeAnimation,
                           child: Container(
+                            width: double.infinity,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 24,
                               vertical: 16,
@@ -285,7 +287,7 @@ class _StreakNotificationState extends State<StreakNotification>
                                 letterSpacing: 0.2,
                                 decoration: TextDecoration.none,
                               ),
-                              textAlign: TextAlign.center,
+                              textAlign: TextAlign.left,
                             ),
                           ),
                         ),
@@ -297,6 +299,7 @@ class _StreakNotificationState extends State<StreakNotification>
                         FadeTransition(
                           opacity: _fadeAnimation,
                           child: Container(
+                            width: double.infinity,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 24,
                               vertical: 16,
@@ -319,7 +322,7 @@ class _StreakNotificationState extends State<StreakNotification>
                                 letterSpacing: 0.2,
                                 decoration: TextDecoration.none,
                               ),
-                              textAlign: TextAlign.center,
+                              textAlign: TextAlign.left,
                             ),
                           ),
                         ),
@@ -331,6 +334,7 @@ class _StreakNotificationState extends State<StreakNotification>
                         FadeTransition(
                           opacity: _fadeAnimation,
                           child: Container(
+                            width: double.infinity,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 24,
                               vertical: 16,
@@ -346,14 +350,14 @@ class _StreakNotificationState extends State<StreakNotification>
                             child: Text(
                               _texts[5],
                               style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
                                 color: Colors.teal,
                                 fontFamily: 'Aleo',
                                 letterSpacing: 0.2,
                                 decoration: TextDecoration.none,
                               ),
-                              textAlign: TextAlign.center,
+                              textAlign: TextAlign.left,
                             ),
                           ),
                         ),

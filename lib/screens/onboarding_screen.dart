@@ -111,6 +111,159 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     'Waking Up Early': '⏰',
   };
 
+  // Helper function to get emoji for a habit (including custom habits)
+  String _getHabitEmoji(String habitName) {
+    // First check if it's a predefined habit
+    if (_habitEmojis.containsKey(habitName)) {
+      return _habitEmojis[habitName]!;
+    }
+    
+    // For custom habits, try to suggest an appropriate emoji based on the name
+    final lowerName = habitName.toLowerCase();
+    
+    // Common habit keywords and their suggested emojis
+    if (lowerName.contains('water') || lowerName.contains('drink')) return '💧';
+    if (lowerName.contains('exercise') || lowerName.contains('workout') || lowerName.contains('gym')) return '🏋️';
+    if (lowerName.contains('yoga') || lowerName.contains('stretch')) return '🧘';
+    if (lowerName.contains('sleep') || lowerName.contains('bed')) return '😴';
+    if (lowerName.contains('code') || lowerName.contains('programming')) return '💻';
+    if (lowerName.contains('write') || lowerName.contains('journal')) return '✍️';
+    if (lowerName.contains('read') || lowerName.contains('book')) return '📚';
+    if (lowerName.contains('music') || lowerName.contains('guitar') || lowerName.contains('piano')) return '🎵';
+    if (lowerName.contains('art') || lowerName.contains('draw') || lowerName.contains('paint')) return '🎨';
+    if (lowerName.contains('cook') || lowerName.contains('food')) return '👨‍🍳';
+    if (lowerName.contains('walk') || lowerName.contains('run')) return '🚶';
+    if (lowerName.contains('meditation') || lowerName.contains('mindful')) return '🧘‍♀️';
+    if (lowerName.contains('language') || lowerName.contains('learn')) return '🌍';
+    if (lowerName.contains('call') || lowerName.contains('phone')) return '📞';
+    if (lowerName.contains('clean') || lowerName.contains('organize')) return '🧹';
+    if (lowerName.contains('save') || lowerName.contains('money')) return '💰';
+    if (lowerName.contains('social') || lowerName.contains('friend')) return '👥';
+    if (lowerName.contains('garden') || lowerName.contains('plant')) return '🌱';
+    if (lowerName.contains('photo') || lowerName.contains('camera')) return '📸';
+    
+    // Default emoji for custom habits
+    return '✨';
+  }
+
+  void _showCustomHabitDialog() {
+    final TextEditingController habitController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) => AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.95),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          title: const Text(
+            'Create Custom Habit',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w400,
+              fontSize: 16,
+              fontFamily: 'Aleo',
+              letterSpacing: 0.2,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Enter your custom habit name:',
+                style: TextStyle(
+                  color: Colors.white60,
+                  fontWeight: FontWeight.w300,
+                  fontSize: 12,
+                  fontFamily: 'Aleo',
+                  letterSpacing: 0.1,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: habitController,
+                onChanged: (value) {
+                  setStateDialog(() {}); // Rebuild the dialog when text changes
+                },
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontFamily: 'Aleo',
+                  fontWeight: FontWeight.w400,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'e.g., Drinking Water, Learning Guitar...',
+                  hintStyle: TextStyle(
+                    color: Colors.white.withOpacity(0.5),
+                    fontSize: 12,
+                    fontFamily: 'Aleo',
+                    fontWeight: FontWeight.w300,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: Colors.tealAccent,
+                      width: 2,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+                autofocus: true,
+                textCapitalization: TextCapitalization.words,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 13,
+                  fontFamily: 'Aleo',
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: habitController.text.trim().isNotEmpty
+                  ? () {
+                      final habitName = habitController.text.trim();
+                      setState(() {
+                        _selectedHabits.add(habitName);
+                      });
+                      Navigator.of(context).pop();
+                    }
+                  : null,
+              child: const Text(
+                'Add',
+                style: TextStyle(
+                  color: Colors.tealAccent,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 13,
+                  fontFamily: 'Aleo',
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -771,65 +924,198 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
               builder: (context, child) {
                 return Opacity(
                   opacity: _typingController.value > 0.3 ? 1.0 : 0.0,
-                  child: ListView.builder(
-                    itemCount: _preMadeHabits.length,
-                    itemBuilder: (context, index) {
-                      final habit = _preMadeHabits[index];
-                      final isSelected = _selectedHabits.contains(habit);
-                      
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              if (isSelected) {
-                                _selectedHabits.remove(habit);
-                              } else if (_selectedHabits.length < 3) {
-                                _selectedHabits.add(habit);
-                              }
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                            decoration: BoxDecoration(
-                              color: isSelected 
-                                  ? Colors.tealAccent.withOpacity(0.2)
-                                  : Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
+                  child: ListView(
+                    children: [
+                      // Pre-made habits
+                      ..._preMadeHabits.map((habit) {
+                        final isSelected = _selectedHabits.contains(habit);
+                        
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                if (isSelected) {
+                                  _selectedHabits.remove(habit);
+                                } else if (_selectedHabits.length < 3) {
+                                  _selectedHabits.add(habit);
+                                }
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                              decoration: BoxDecoration(
                                 color: isSelected 
-                                    ? Colors.tealAccent 
-                                    : Colors.white.withOpacity(0.3),
-                                width: 2,
+                                    ? Colors.tealAccent.withOpacity(0.2)
+                                    : Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected 
+                                      ? Colors.tealAccent 
+                                      : Colors.white.withOpacity(0.3),
+                                  width: 2,
+                                ),
                               ),
-                            ),
-                            child: Row(
-                              children: [
-                                _buildStyledEmoji(_habitEmojis[habit]!, fontSize: 24),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Text(
-                                    habit,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      color: isSelected ? Colors.tealAccent : Colors.white,
-                                      fontFamily: 'Aleo',
+                              child: Row(
+                                children: [
+                                  _buildStyledEmoji(_getHabitEmoji(habit), fontSize: 24),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Text(
+                                      habit,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: isSelected ? Colors.tealAccent : Colors.white,
+                                        fontFamily: 'Aleo',
+                                      ),
                                     ),
                                   ),
+                                  if (isSelected)
+                                    const Icon(
+                                      Icons.check_circle,
+                                      color: Colors.tealAccent,
+                                      size: 24,
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      
+                      // Custom habits (those that are not in pre-made list)
+                      ..._selectedHabits
+                          .where((habit) => !_preMadeHabits.contains(habit))
+                          .map((habit) {
+                        final isSelected = _selectedHabits.contains(habit);
+                        
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                if (isSelected) {
+                                  _selectedHabits.remove(habit);
+                                }
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                              decoration: BoxDecoration(
+                                color: isSelected 
+                                    ? Colors.tealAccent.withOpacity(0.2)
+                                    : Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected 
+                                      ? Colors.tealAccent 
+                                      : Colors.white.withOpacity(0.3),
+                                  width: 2,
                                 ),
-                                if (isSelected)
+                              ),
+                              child: Row(
+                                children: [
+                                  _buildStyledEmoji(_getHabitEmoji(habit), fontSize: 24),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          habit,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                            color: isSelected ? Colors.tealAccent : Colors.white,
+                                            fontFamily: 'Aleo',
+                                          ),
+                                        ),
+                                        Text(
+                                          'Custom habit',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w300,
+                                            color: Colors.white.withOpacity(0.7),
+                                            fontFamily: 'Aleo',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    const Icon(
+                                      Icons.check_circle,
+                                      color: Colors.tealAccent,
+                                      size: 24,
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      
+                      // Custom habit option (only show if under limit)
+                      if (_selectedHabits.length < 3)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: GestureDetector(
+                            onTap: () {
+                              if (_selectedHabits.length < 3) {
+                                _showCustomHabitDialog();
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 2,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  _buildStyledEmoji('✨', fontSize: 24),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Create Custom Habit',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white,
+                                            fontFamily: 'Aleo',
+                                          ),
+                                        ),
+                                        Text(
+                                          'Add your own habit name',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w300,
+                                            color: Colors.white.withOpacity(0.7),
+                                            fontFamily: 'Aleo',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                   const Icon(
-                                    Icons.check_circle,
+                                    Icons.add_circle_outline,
                                     color: Colors.tealAccent,
                                     size: 24,
                                   ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      );
-                    },
+                    ],
                   ),
                 );
               },

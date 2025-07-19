@@ -1,10 +1,15 @@
 ## ROADMAP 
-- Fix welcome screen
+------ v1.0.0
 - Complete onboarding flow
+- Habit content  
+- Increase Habits List 
 - Tiers & Achievements
 - Improve notifications
 - Implement Android 
 - Implement iOS
-- Increase Habits List and Custom Habits 
-- Habit Onboarding  
+------ v1.0.1
 - Push Notifications 
+- Social Features
+- Specific Helpers
+------ v1.0.2
+- Apple Health Integration
