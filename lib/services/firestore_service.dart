@@ -50,6 +50,10 @@ class FirestoreService {
             points: habitData['points'] ?? 0,
             solidLevel: habitData['solidLevel'] ?? 0,
             consecutiveMisses: habitData['consecutiveMisses'] ?? 0,
+            whereAndWhen: habitData['whereAndWhen'],
+            bareMinimum: habitData['bareMinimum'],
+            desirableLevel: habitData['desirableLevel'],
+            makeEasyAndObvious: habitData['makeEasyAndObvious'],
           ));
         }
       } else {
@@ -118,6 +122,10 @@ class FirestoreService {
           'points': habit.points,
           'solidLevel': habit.solidLevel,
           'consecutiveMisses': habit.consecutiveMisses,
+          'whereAndWhen': habit.whereAndWhen,
+          'bareMinimum': habit.bareMinimum,
+          'desirableLevel': habit.desirableLevel,
+          'makeEasyAndObvious': habit.makeEasyAndObvious,
         });
       }
 

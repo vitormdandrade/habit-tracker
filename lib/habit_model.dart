@@ -7,6 +7,12 @@ class Habit {
   int solidLevel; // 0 = normal, 1+ = solid level
   int consecutiveMisses; // Track consecutive misses for solid habits
 
+  // Atomic Habits framework properties
+  String? whereAndWhen; // Where and when to execute the habit
+  String? bareMinimum; // The bare minimum level
+  String? desirableLevel; // The desirable level
+  String? makeEasyAndObvious; // How to make the habit easy and obvious
+
   Habit({
     required this.id, 
     required this.name, 
@@ -15,12 +21,27 @@ class Habit {
     this.points = 0,
     this.solidLevel = 0,
     this.consecutiveMisses = 0,
+    this.whereAndWhen,
+    this.bareMinimum,
+    this.desirableLevel,
+    this.makeEasyAndObvious,
   });
 
   bool get isSolid => solidLevel > 0;
   
   // Get the number of consecutive misses allowed before losing solid status
   int get allowedMisses => solidLevel * 3;
+  
+  // Check if all Atomic Habits properties are filled
+  bool get hasCompleteAtomicHabitsPlan => 
+    whereAndWhen != null && 
+    whereAndWhen!.isNotEmpty &&
+    bareMinimum != null && 
+    bareMinimum!.isNotEmpty &&
+    desirableLevel != null && 
+    desirableLevel!.isNotEmpty &&
+    makeEasyAndObvious != null && 
+    makeEasyAndObvious!.isNotEmpty;
 }
 
 class HabitDay {
@@ -36,6 +57,15 @@ class DayStats {
   final int points;
 
   DayStats({required this.date, required this.streak, required this.points});
+}
+
+// Move Achievement to top level
+class Achievement {
+  final String id;
+  final String title;
+  final String description;
+  final bool achieved;
+  Achievement({required this.id, required this.title, required this.description, required this.achieved});
 }
 
 class HabitTracker {
@@ -352,6 +382,113 @@ class HabitTracker {
   int getCompletedHabitsForDayBefore(DateTime date) {
     final dayBefore = date.subtract(const Duration(days: 1));
     return getCompletedHabitsForDay(dayBefore);
+  }
+
+  // Tier calculation
+  int get tierPoints {
+    int points = this.points;
+    int streakPoints = (maxStreak > streak ? maxStreak : streak) * 3;
+    int solidPoints = habits.where((h) => h.isSolid).length * 50;
+    return points + streakPoints + solidPoints;
+  }
+
+  String get tierName {
+    final tp = tierPoints;
+    if (tp < 30) return 'Newbie';
+    if (tp < 90) return 'Novice';
+    if (tp < 200) return 'Challenger';
+    if (tp < 500) return 'Pro';
+    if (tp < 1000) return 'Expert';
+    if (tp < 2000) return 'Master';
+    if (tp < 5000) return 'Grand Master';
+    return 'Hall of Fame';
+  }
+
+  int get tierMin {
+    final tp = tierPoints;
+    if (tp < 30) return 0;
+    if (tp < 90) return 30;
+    if (tp < 200) return 90;
+    if (tp < 500) return 200;
+    if (tp < 1000) return 500;
+    if (tp < 2000) return 1000;
+    if (tp < 5000) return 2000;
+    return 5000;
+  }
+
+  int get tierMax {
+    final tp = tierPoints;
+    if (tp < 30) return 30;
+    if (tp < 90) return 90;
+    if (tp < 200) return 200;
+    if (tp < 500) return 500;
+    if (tp < 1000) return 1000;
+    if (tp < 2000) return 2000;
+    if (tp < 5000) return 5000;
+    return 999999;
+  }
+
+  double get tierProgress => (tierPoints - tierMin) / (tierMax - tierMin);
+
+  // Achievements
+  List<Achievement> get achievements {
+    final List<Achievement> all = [
+      Achievement(
+        id: 'streak7',
+        title: '7 Day Streak',
+        description: 'Reach a 7 day streak',
+        achieved: maxStreak >= 7,
+      ),
+      Achievement(
+        id: 'streak30',
+        title: '30 Day Streak',
+        description: 'Reach a 30 day streak',
+        achieved: maxStreak >= 30,
+      ),
+      Achievement(
+        id: 'streak100',
+        title: '100 Day Streak',
+        description: 'Reach a 100 day streak',
+        achieved: maxStreak >= 100,
+      ),
+      Achievement(
+        id: 'points7',
+        title: '7 Points',
+        description: 'Reach 7 points',
+        achieved: points >= 7,
+      ),
+      Achievement(
+        id: 'points30',
+        title: '30 Points',
+        description: 'Reach 30 points',
+        achieved: points >= 30,
+      ),
+      Achievement(
+        id: 'points100',
+        title: '100 Points',
+        description: 'Reach 100 points',
+        achieved: points >= 100,
+      ),
+      Achievement(
+        id: 'solid1',
+        title: 'Solid Habit',
+        description: 'Get 1 solid habit',
+        achieved: habits.where((h) => h.isSolid).length >= 1,
+      ),
+      Achievement(
+        id: 'solid2',
+        title: '2 Solid Habits',
+        description: 'Get 2 solid habits',
+        achieved: habits.where((h) => h.isSolid).length >= 2,
+      ),
+      Achievement(
+        id: 'solid5',
+        title: '5 Solid Habits',
+        description: 'Get 5 solid habits',
+        achieved: habits.where((h) => h.isSolid).length >= 5,
+      ),
+    ];
+    return all;
   }
 
   static bool isSameDay(DateTime a, DateTime b) {

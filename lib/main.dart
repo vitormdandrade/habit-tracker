@@ -7,6 +7,7 @@ import 'streak_notification.dart';
 import 'stats_screen.dart';
 import 'screens/auth_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/habit_properties_screen.dart';
 import 'services/auth_service.dart';
 import 'services/firestore_service.dart';
 import 'firebase_options.dart';
@@ -649,6 +650,34 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
       }
     });
     _saveData();
+  }
+
+  void _updateHabit(int index, Habit updatedHabit) {
+    if (tracker == null) return;
+    setState(() {
+      tracker!.habits[index] = updatedHabit;
+    });
+    _saveData();
+  }
+
+  void _showHabitProperties(int index) {
+    if (tracker == null) return;
+    final habit = tracker!.habits[index];
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => HabitPropertiesScreen(
+          habit: habit,
+          onHabitUpdated: (updatedHabit) => _updateHabit(index, updatedHabit),
+        ),
+      ),
+    );
   }
 
   void _addHabit() {
@@ -1614,8 +1643,10 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                                 width: habit.isSolid ? 2 : (todayEntry.completed ? 2.5 : 1),
                               ),
                             ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Reduced horizontal padding to match vertical
+                            child: Stack(
+                              children: [
+                                ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               leading: Checkbox(
                                 value: todayEntry.completed,
                                 onChanged: (value) => _toggleHabit(index, value),
@@ -1631,14 +1662,14 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                                       children: [
                                         habit.isSolid 
                                             ? Text(
-                                                _getHabitEmoji(habit.name),
+                                                    _getHabitEmoji(habit.name),
                                                 style: const TextStyle(
                                                   fontSize: 16,
                                                   color: Colors.white,
                                                 ),
                                               )
-                                            : _buildStyledEmoji(_getHabitEmoji(habit.name), fontSize: 16),
-                                        const SizedBox(width: 8), // Same distance as between emoji and title
+                                                : _buildStyledEmoji(_getHabitEmoji(habit.name), fontSize: 16),
+                                            const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
                                             habit.name,
@@ -1653,57 +1684,6 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                                       ],
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Solid level indicator
-                                        if (habit.isSolid)
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: Colors.teal,
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              'Solid ${habit.solidLevel}',
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 8,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                        if (habit.isSolid) const SizedBox(height: 2),
-                                        // Streak and points counters
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            _buildStyledEmoji('🔥', fontSize: 10),
-                                            Text(
-                                              '${habit.streak}  •  ',
-                                              style: TextStyle(
-                                                color: Colors.grey[600],
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w300,
-                                                letterSpacing: 0.1,
-                                              ),
-                                            ),
-                                            _buildStyledEmoji('⭐', fontSize: 10),
-                                            Text(
-                                              '${habit.points}',
-                                              style: TextStyle(
-                                                color: Colors.grey[600],
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w300,
-                                                letterSpacing: 0.1,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
                                         // 5-day dots
                                         Row(
                                           mainAxisSize: MainAxisSize.min,
@@ -1715,12 +1695,42 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
                                               ),
                                           ],
                                         ),
-                                      ],
+                                      const SizedBox(width: 8),
+                                      // Properties button
+                                      GestureDetector(
+                                        onTap: () => _showHabitProperties(index),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: const Icon(
+                                            Icons.settings,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
                                     ),
                                   ),
                                 ],
                               ),
                               subtitle: null,
+                                ),
+                                // Teal circle indicator for incomplete Atomic Habits plan
+                                if (!habit.hasCompleteAtomicHabitsPlan)
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: Container(
+                                      width: 12,
+                                      height: 12,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.tealAccent,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           );
                         },

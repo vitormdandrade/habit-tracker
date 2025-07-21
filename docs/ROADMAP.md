@@ -1,15 +1,17 @@
 ## ROADMAP 
 ------ v1.0.0
 - Complete onboarding flow
-- Habit content  
-- Increase Habits List 
-- Tiers & Achievements
-- Improve notifications
+- Last visual adjustments
+- Debugging
 - Implement Android 
 - Implement iOS
 ------ v1.0.1
+- Improve notifications
+- Improve habit content 
 - Push Notifications 
 - Social Features
 - Specific Helpers
+- Edit habits
 ------ v1.0.2
+- Monetization
 - Apple Health Integration

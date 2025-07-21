@@ -33,10 +33,15 @@ class StatsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Tier Section
+            _buildTierSection(context),
+            const SizedBox(height: 24),
+            // Achievements Section
+            _AchievementsSection(tracker: tracker),
+            const SizedBox(height: 24),
             // Overview Stats
             _buildOverviewCard(context, daysSinceStart),
             const SizedBox(height: 24),
-            
             // Streak Chart
             _buildChartCard(
               context,
@@ -44,7 +49,6 @@ class StatsScreen extends StatelessWidget {
               _buildStreakChart(context),
             ),
             const SizedBox(height: 24),
-            
             // Points Chart
             _buildChartCard(
               context,
@@ -55,6 +59,103 @@ class StatsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildTierSection(BuildContext context) {
+    final tier = tracker.tierName;
+    final points = tracker.tierPoints;
+    final min = tracker.tierMin;
+    final max = tracker.tierMax;
+    final progress = tracker.tierProgress.clamp(0.0, 1.0);
+    final nextTier = _nextTierName(tier);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.teal.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.tealAccent.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.emoji_events, color: Colors.tealAccent, size: 28),
+              const SizedBox(width: 10),
+              Text(
+                'Tier: $tier',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                  fontFamily: 'Aleo',
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '$points TP',
+                style: const TextStyle(
+                  color: Colors.tealAccent,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  fontFamily: 'Aleo',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Stack(
+            children: [
+              Container(
+                height: 16,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              FractionallySizedBox(
+                widthFactor: progress,
+                child: Container(
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: Colors.tealAccent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: Center(
+                  child: Text(
+                    nextTier != null
+                        ? '$points / $max TP  (Next: $nextTier)'
+                        : '$points TP',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
+                      fontWeight: FontWeight.w400,
+                      fontSize: 13,
+                      fontFamily: 'Aleo',
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String? _nextTierName(String current) {
+    const tiers = [
+      'Newbie', 'Novice', 'Challenger', 'Pro', 'Expert', 'Master', 'Grand Master', 'Hall of Fame'
+    ];
+    final idx = tiers.indexOf(current);
+    if (idx >= 0 && idx < tiers.length - 1) return tiers[idx + 1];
+    return null;
   }
 
   Widget _buildOverviewCard(BuildContext context, int daysSinceStart) {
@@ -418,6 +519,106 @@ class StatsScreen extends StatelessWidget {
         maxX: (tracker.dailyStats.length - 1).toDouble(),
         minY: 0,
         maxY: (tracker.points > 0 ? tracker.points : 10).toDouble(),
+      ),
+    );
+  }
+} 
+
+class _AchievementsSection extends StatefulWidget {
+  final HabitTracker tracker;
+  const _AchievementsSection({required this.tracker});
+  @override
+  State<_AchievementsSection> createState() => _AchievementsSectionState();
+}
+
+class _AchievementsSectionState extends State<_AchievementsSection> {
+  bool _showAll = false;
+  @override
+  Widget build(BuildContext context) {
+    final achievements = widget.tracker.achievements;
+    final done = achievements.where((a) => a.achieved).toList();
+    final notDone = achievements.where((a) => !a.achieved).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text(
+              'Achievements',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+                fontFamily: 'Aleo',
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: Icon(_showAll ? Icons.expand_less : Icons.expand_more, color: Colors.tealAccent),
+              onPressed: () => setState(() => _showAll = !_showAll),
+              tooltip: _showAll ? 'Hide Achievements' : 'Show Achievements',
+            ),
+          ],
+        ),
+        if (_showAll) ...[
+          const SizedBox(height: 8),
+          ...done.map((a) => _buildAchievementTile(a, true)),
+          if (done.isNotEmpty && notDone.isNotEmpty) const Divider(color: Colors.white24, height: 24),
+          ...notDone.map((a) => _buildAchievementTile(a, false)),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildAchievementTile(Achievement a, bool done) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: done ? Colors.teal.withOpacity(0.18) : Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: done ? Colors.tealAccent : Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            done ? Icons.emoji_events : Icons.emoji_events_outlined,
+            color: done ? Colors.tealAccent : Colors.white54,
+            size: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  a.title,
+                  style: TextStyle(
+                    color: done ? Colors.tealAccent : Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    fontFamily: 'Aleo',
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  a.description,
+                  style: TextStyle(
+                    color: done ? Colors.white70 : Colors.white38,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 12,
+                    fontFamily: 'Aleo',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (done)
+            const Icon(Icons.check_circle, color: Colors.tealAccent, size: 20),
+        ],
       ),
     );
   }

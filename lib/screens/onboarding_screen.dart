@@ -928,60 +928,60 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                     children: [
                       // Pre-made habits
                       ..._preMadeHabits.map((habit) {
-                        final isSelected = _selectedHabits.contains(habit);
-                        
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                if (isSelected) {
-                                  _selectedHabits.remove(habit);
-                                } else if (_selectedHabits.length < 3) {
-                                  _selectedHabits.add(habit);
-                                }
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                              decoration: BoxDecoration(
+                      final isSelected = _selectedHabits.contains(habit);
+                      
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              if (isSelected) {
+                                _selectedHabits.remove(habit);
+                              } else if (_selectedHabits.length < 3) {
+                                _selectedHabits.add(habit);
+                              }
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                            decoration: BoxDecoration(
+                              color: isSelected 
+                                  ? Colors.tealAccent.withOpacity(0.2)
+                                  : Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
                                 color: isSelected 
-                                    ? Colors.tealAccent.withOpacity(0.2)
-                                    : Colors.white.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: isSelected 
-                                      ? Colors.tealAccent 
-                                      : Colors.white.withOpacity(0.3),
-                                  width: 2,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  _buildStyledEmoji(_getHabitEmoji(habit), fontSize: 24),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Text(
-                                      habit,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                        color: isSelected ? Colors.tealAccent : Colors.white,
-                                        fontFamily: 'Aleo',
-                                      ),
-                                    ),
-                                  ),
-                                  if (isSelected)
-                                    const Icon(
-                                      Icons.check_circle,
-                                      color: Colors.tealAccent,
-                                      size: 24,
-                                    ),
-                                ],
+                                    ? Colors.tealAccent 
+                                    : Colors.white.withOpacity(0.3),
+                                width: 2,
                               ),
                             ),
+                            child: Row(
+                              children: [
+                                  _buildStyledEmoji(_getHabitEmoji(habit), fontSize: 24),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    habit,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: isSelected ? Colors.tealAccent : Colors.white,
+                                      fontFamily: 'Aleo',
+                                    ),
+                                  ),
+                                ),
+                                if (isSelected)
+                                  const Icon(
+                                    Icons.check_circle,
+                                    color: Colors.tealAccent,
+                                    size: 24,
+                                  ),
+                              ],
+                            ),
                           ),
-                        );
+                        ),
+                      );
                       }).toList(),
                       
                       // Custom habits (those that are not in pre-made list)
