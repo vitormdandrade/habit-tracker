@@ -189,6 +189,7 @@ class _StreakNotificationState extends State<StreakNotification>
             padding: const EdgeInsets.all(32.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Spacer(),
                 

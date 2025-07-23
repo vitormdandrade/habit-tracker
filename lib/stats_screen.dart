@@ -108,42 +108,39 @@ class StatsScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Stack(
-            children: [
-              Container(
-                height: 16,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              FractionallySizedBox(
-                widthFactor: progress,
-                child: Container(
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: Colors.tealAccent,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                child: Center(
-                  child: Text(
-                    nextTier != null
-                        ? '$points / $max TP  (Next: $nextTier)'
-                        : '$points TP',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
-                      fontWeight: FontWeight.w400,
-                      fontSize: 13,
-                      fontFamily: 'Aleo',
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+                         Stack(
+                 children: [
+                   Container(
+                     height: 16,
+                     decoration: BoxDecoration(
+                       color: Colors.white.withOpacity(0.08),
+                       borderRadius: BorderRadius.circular(8),
+                     ),
+                   ),
+                   FractionallySizedBox(
+                     widthFactor: progress,
+                     child: Container(
+                       height: 16,
+                       decoration: BoxDecoration(
+                         color: Colors.tealAccent,
+                         borderRadius: BorderRadius.circular(8),
+                       ),
+                     ),
+                   ),
+                 ],
+               ),
+               const SizedBox(height: 8),
+               Text(
+                 nextTier != null
+                     ? '$points / $max TP  (Next: $nextTier)'
+                     : '$points TP',
+                 style: TextStyle(
+                   color: Colors.white.withOpacity(0.85),
+                   fontWeight: FontWeight.w400,
+                   fontSize: 13,
+                   fontFamily: 'Aleo',
+                 ),
+               ),
         ],
       ),
     );

@@ -638,6 +638,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     return Padding(
       padding: const EdgeInsets.all(32.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Spacer(),
           

@@ -164,6 +164,11 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
     
     // Listen to auth state changes
     _authService.authStateChanges.listen((User? user) {
+      if (mounted) {
+        setState(() {
+          _currentUser = user;
+        });
+      }
       if (user != null && mounted) {
         // User signed in, reload data
         _loadUserData();
@@ -245,6 +250,8 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
     // Trigger animation after onboarding is complete
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _animationController.forward(from: 0.0);
+      // Show sign-in dialog after onboarding to encourage users to sign up
+      _showSaveProgressDialog();
     });
   }
 
@@ -1322,13 +1329,13 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
       Navigator.of(context).pop(); // Close loading dialog
       
       if (loadedTracker != null) {
+        // Always use cloud data as the source of truth after login
         setState(() {
           tracker = loadedTracker;
           _onboarding = false;
           _isLoadingData = false; // Make sure to set this to false
         });
         _animationController.forward();
-        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('✅ Welcome back! Your progress has been loaded.'),
