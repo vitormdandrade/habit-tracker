@@ -61,7 +61,7 @@ class HabitHomePage extends StatefulWidget {
 
 class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProviderStateMixin {
   HabitTracker? tracker;
-  DateTime _simulatedToday = DateTime.now();
+  DateTime _simulatedToday = DateTime.now(); // Keep for dev mode only
   bool _onboarding = true;
   int? _initialHabitCount;
   int _currentIndex = 0;
@@ -98,6 +98,9 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
   late DateTime _lastOpenedDate;
   int? _previousStreak;
   bool _isShowingStreakNotification = false;
+
+  // Get the current date for habit tracking (real date or simulated in dev mode)
+  DateTime get _currentDate => _devMode ? _simulatedToday : DateTime.now();
   
   // Helper function to style emojis as off-white and fully opaque
   Widget _buildStyledEmoji(String emoji, {double fontSize = 16}) {
@@ -155,7 +158,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _lastOpenedDate = _simulatedToday;
+    _lastOpenedDate = _currentDate;
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -192,6 +195,10 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
             _onboarding = false;
             _isLoadingData = false;
           });
+          
+          // Check if a new day has passed and automatically update streaks
+          await _checkForNewDayAndUpdate();
+          
           _animationController.forward();
           return;
         } else {
@@ -209,6 +216,89 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
       _isLoadingData = false;
     });
     // Onboarding will be shown in the build method when _onboarding is true
+  }
+
+  /// Check if a new day has passed since the last app usage and update streaks accordingly
+  Future<void> _checkForNewDayAndUpdate() async {
+    if (tracker == null || _devMode) return; // Skip automatic day detection in dev mode
+
+    final today = DateTime.now();
+    
+    // Get the last date that was finalized (from dailyStats)
+    DateTime? lastFinalizedDate;
+    if (tracker!.dailyStats.isNotEmpty) {
+      lastFinalizedDate = tracker!.dailyStats.map((s) => s.date).reduce((a, b) => a.isAfter(b) ? a : b);
+    }
+
+    // Determine what date to start finalizing from
+    DateTime startDate;
+    if (lastFinalizedDate == null) {
+      // No days finalized yet, start from the tracker's start date
+      startDate = tracker!.startDate ?? today.subtract(const Duration(days: 1));
+    } else {
+      // Start from the day after the last finalized date
+      startDate = lastFinalizedDate.add(const Duration(days: 1));
+    }
+
+    // Finalize each day up to yesterday (don't finalize today until it's over)
+    final yesterday = today.subtract(const Duration(days: 1));
+    
+    bool needsUpdate = false;
+    bool mustRemove = false;
+    int previousStreak = tracker!.streak;
+    
+    // Process ALL days from startDate to yesterday (regardless of whether there was activity)
+    DateTime currentDate = startDate;
+    
+    // Process every single day up to yesterday, even if no habits were recorded
+    while (HabitTracker.isSameDay(currentDate, yesterday) || currentDate.isBefore(yesterday)) {
+      // Call updateStreak to finalize this day (will break streak if no habits completed)
+      bool dayMustRemove = tracker!.updateStreak(currentDate);
+      
+      mustRemove = dayMustRemove || mustRemove;
+      needsUpdate = true;
+      
+      // Move to next day
+      currentDate = currentDate.add(const Duration(days: 1));
+    }
+    
+    if (needsUpdate) {
+      // Save the updated data
+      await _saveData();
+      
+      // Show streak notification if the streak changed
+      if (previousStreak != tracker!.streak && mounted) {
+        setState(() {
+          _isShowingStreakNotification = true;
+        });
+        
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => StreakNotification(
+            isStreakIncreased: tracker!.streak > previousStreak,
+            currentStreak: tracker!.streak,
+            previousStreak: previousStreak,
+            completedHabitsYesterday: tracker!.getCompletedHabitsForDay(yesterday),
+            totalHabits: tracker!.habits.length,
+            totalPoints: tracker!.points,
+            currentDate: today,
+            tracker: tracker!,
+            onDismiss: () {
+              setState(() {
+                _isShowingStreakNotification = false;
+              });
+              Navigator.of(context).pop();
+            },
+          ),
+        );
+      }
+      
+      // Handle forced habit removal if required
+      if (mustRemove && mounted) {
+        await _showForceRemoveHabitDialog();
+      }
+    }
   }
 
   Future<void> _saveData() async {
@@ -233,9 +323,9 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
   }
 
   void _checkAndAnimateNewDay() {
-    if (!HabitTracker.isSameDay(_lastOpenedDate, _simulatedToday)) {
+    if (!HabitTracker.isSameDay(_lastOpenedDate, _currentDate)) {
       _animationController.forward(from: 0.0);
-      _lastOpenedDate = _simulatedToday;
+      _lastOpenedDate = _currentDate;
     }
   }
 
@@ -248,8 +338,12 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
     // Save initial data to Firebase
     _saveData();
     // Trigger animation after onboarding is complete
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       _animationController.forward(from: 0.0);
+      
+      // Check for day changes even for new users (in case they started onboarding on a previous day)
+      await _checkForNewDayAndUpdate();
+      
       // Show sign-in dialog after onboarding to encourage users to sign up
       _showSaveProgressDialog();
     });
@@ -648,12 +742,12 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
   void _toggleHabit(int index, bool? value) {
     if (tracker == null) return;
     final habit = tracker!.habits[index];
-    final todayEntry = habit.history.indexWhere((h) => HabitTracker.isSameDay(h.date, _simulatedToday));
+    final todayEntry = habit.history.indexWhere((h) => HabitTracker.isSameDay(h.date, _currentDate));
     setState(() {
       if (todayEntry >= 0) {
-        habit.history[todayEntry] = HabitDay(date: _simulatedToday, completed: value ?? false);
+        habit.history[todayEntry] = HabitDay(date: _currentDate, completed: value ?? false);
       } else {
-        habit.history.add(HabitDay(date: _simulatedToday, completed: value ?? false));
+        habit.history.add(HabitDay(date: _currentDate, completed: value ?? false));
       }
     });
     _saveData();
@@ -1047,10 +1141,16 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
     bool mustRemove = false;
     bool prevCanAdd = tracker!.canAddHabit();
     int previousStreak = tracker!.streak;
-    setState(() {
-      mustRemove = tracker!.updateStreak(_simulatedToday);
-      _simulatedToday = _simulatedToday.add(const Duration(days: 1));
-    });
+          setState(() {
+        // Only use _simulatedToday in dev mode, otherwise use real date
+        if (_devMode) {
+          mustRemove = tracker!.updateStreak(_simulatedToday);
+          _simulatedToday = _simulatedToday.add(const Duration(days: 1));
+        } else {
+          // In production mode, this shouldn't happen, but if it does, use real date
+          mustRemove = tracker!.updateStreak(DateTime.now());
+        }
+      });
 
     // Wait for the open-up transition to complete
     await Future.delayed(const Duration(milliseconds: 1500));
@@ -1066,10 +1166,10 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
           isStreakIncreased: tracker!.streak > previousStreak,
           currentStreak: tracker!.streak,
           previousStreak: previousStreak,
-          completedHabitsYesterday: tracker!.getCompletedHabitsForDayBefore(_simulatedToday),
+          completedHabitsYesterday: tracker!.getCompletedHabitsForDayBefore(_currentDate),
           totalHabits: tracker!.habits.length,
           totalPoints: tracker!.points,
-          currentDate: _simulatedToday,
+          currentDate: _currentDate,
           tracker: tracker!,
           onDismiss: () {
             setState(() {
@@ -1144,7 +1244,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
   void _reset() {
     setState(() {
       tracker = null;
-      _simulatedToday = DateTime.now();
+              _simulatedToday = DateTime.now(); // Reset simulated date for dev mode
       _onboarding = true;
       _initialHabitCount = null;
       _selectedHabits = [];
@@ -1429,7 +1529,7 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
   }
 
   Widget _buildHabitsScreen(BuildContext context) {
-    final today = _simulatedToday;
+    final today = _currentDate;
     _checkAndAnimateNewDay();
 
     return Scaffold(
@@ -1857,3 +1957,4 @@ class _HabitHomePageState extends State<HabitHomePage> with SingleTickerProvider
     );
   }
 }
+

@@ -47,42 +47,42 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
   // Explanation phrases - easily editable
   final List<ExplanationPhrase> _explanationPhrases = [
     ExplanationPhrase(
-      text: "Here's how it works:",
+      text: "Welcome to Gradually. I've built this app because, like you, I've struggled a lot to build good habits. So I've built a system through years of trial and error, and I'm sharing it with you.",
       highlightWords: ['how', 'works'],
       highlightColor: Colors.tealAccent,
     ),
     ExplanationPhrase(
-      text: "Building streaks is about consistency, not perfection.",
-      highlightWords: ['consistency', 'perfection'],
-      highlightColor: Colors.tealAccent,
-      imagePath: 'assets/consistency_illustration.png', // Example image
-    ),
-    ExplanationPhrase(
-      text: "You can miss one habit per day, but try not to miss the same habit two days in a row.",
-      highlightWords: ['one habit', 'same habit', 'two days'],
+      text: "The main thing I've learned is that building streaks is about consistency, not perfection. It's about fitting the habit into your life, not forcing it.",
+      highlightWords: ['consistency', 'perfection', 'forcing'],
       highlightColor: Colors.tealAccent,
     ),
     ExplanationPhrase(
-      text: "Every 14 days of your streak, you unlock the ability to add a new habit.",
-      highlightWords: ['14 days', 'unlock', 'new habit'],
+      text: "Here are the rules. To increase your streak, you can miss at most one habit per day. However, you can't miss the same habit two days in a row.",
+      highlightWords: ['one', 'habit', 'same', 'two', 'days'],
       highlightColor: Colors.tealAccent,
-      imagePath: 'assets/unlock_illustration.png', // Example image
+      imagePath: 'assets/onboarding_1.png', // Example image
     ),
     ExplanationPhrase(
-      text: "This keeps things manageable and sustainable.",
-      highlightWords: ['manageable', 'sustainable'],
+      text: "Also, I won't let you add more than 3 habits at the start. Don't hurry into it. Every 14 days of your streak, you unlock the ability to add a new habit.",
+      highlightWords: ['3','14', 'days', 'unlock', 'new', 'habit', 'habits'],
+      highlightColor: Colors.tealAccent,
+      imagePath: 'assets/onboarding_2.png', // Example image
+    ),
+    ExplanationPhrase(
+      text: "This keeps things manageable and sustainable. One day at a time, one new habit at a time, you can change your life in a realistic way.",
+      highlightWords: ['manageable', 'sustainable', 'realistic'],
       highlightColor: Colors.tealAccent,
     ),
     ExplanationPhrase(
-      text: "Remember: streaks can be lost, but points are yours forever.",
-      highlightWords: ['points', 'forever'],
+      text: "Losing a streak is frustrating, I know. That's why you also have points. They are never lost, because your effort does not go to waste even when you miss a day.",
+      highlightWords: ['points', 'never', 'lost',  'day', 'effort'],
       highlightColor: Colors.orangeAccent,
+      imagePath: 'assets/onboarding_3.png', // Example image
     ),
     ExplanationPhrase(
-      text: "Every habit completed counts, even when life gets in the way.",
-      highlightWords: ['counts', 'life gets in the way'],
-      highlightColor: Colors.orangeAccent,
-      imagePath: 'assets/life_illustration.png', // Example image
+      text: "Every habit completed counts, even when life gets in the way. You can always start over. I hope this is the start of a new chapter in your life. Enjoy Gradually.",
+      highlightWords: ['every', 'counts', 'always', 'Gradually'],
+      highlightColor: Colors.tealAccent,
     ),
   ];
   
@@ -668,13 +668,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                   child: Container(
                     width: double.infinity,
                     height: 200,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
-                        width: 1,
-                      ),
-                    ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: Image.asset(

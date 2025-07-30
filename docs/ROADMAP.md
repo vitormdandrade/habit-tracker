@@ -1,6 +1,5 @@
 ## ROADMAP 
 ------ v1.0.0
-- Complete onboarding flow
 - Last visual adjustments
 - Debugging
 - Implement Android 
