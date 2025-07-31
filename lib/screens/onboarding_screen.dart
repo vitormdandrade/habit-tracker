@@ -48,7 +48,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
   final List<ExplanationPhrase> _explanationPhrases = [
     ExplanationPhrase(
       text: "Welcome to Gradually. I've built this app because, like you, I've struggled a lot to build good habits. So I've built a system through years of trial and error, and I'm sharing it with you.",
-      highlightWords: ['how', 'works'],
+      highlightWords: ['Gradually', 'struggled', 'system', 'years'],
       highlightColor: Colors.tealAccent,
     ),
     ExplanationPhrase(
@@ -60,13 +60,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
       text: "Here are the rules. To increase your streak, you can miss at most one habit per day. However, you can't miss the same habit two days in a row.",
       highlightWords: ['one', 'habit', 'same', 'two', 'days'],
       highlightColor: Colors.tealAccent,
-      imagePath: 'assets/onboarding_1.png', // Example image
+      imagePath: 'assets/images/onboarding_1.png', // Example image
     ),
     ExplanationPhrase(
       text: "Also, I won't let you add more than 3 habits at the start. Don't hurry into it. Every 14 days of your streak, you unlock the ability to add a new habit.",
       highlightWords: ['3','14', 'days', 'unlock', 'new', 'habit', 'habits'],
       highlightColor: Colors.tealAccent,
-      imagePath: 'assets/onboarding_2.png', // Example image
+      imagePath: 'assets/images/onboarding_2.png', // Example image
     ),
     ExplanationPhrase(
       text: "This keeps things manageable and sustainable. One day at a time, one new habit at a time, you can change your life in a realistic way.",
@@ -77,7 +77,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
       text: "Losing a streak is frustrating, I know. That's why you also have points. They are never lost, because your effort does not go to waste even when you miss a day.",
       highlightWords: ['points', 'never', 'lost',  'day', 'effort'],
       highlightColor: Colors.orangeAccent,
-      imagePath: 'assets/onboarding_3.png', // Example image
+      imagePath: 'assets/images/onboarding_3.png', // Example image
     ),
     ExplanationPhrase(
       text: "Every habit completed counts, even when life gets in the way. You can always start over. I hope this is the start of a new chapter in your life. Enjoy Gradually.",
@@ -507,7 +507,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                   'logo/gradually_linear.png',
                   width: 150,
                   height: 60,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                 ),
               ),
               const SizedBox(width: 16),
@@ -672,7 +672,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                       borderRadius: BorderRadius.circular(16),
                       child: Image.asset(
                         currentPhrase.imagePath!,
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
                           // Fallback if image doesn't exist
                           return Container(
