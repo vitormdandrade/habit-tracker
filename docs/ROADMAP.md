@@ -1,8 +1,4 @@
 ## ROADMAP 
------- v1.0.0
-- Publish Android
-- Debugging
-- Publish iOS
 ------ v1.0.1
 - Improve notifications
 - Improve habit content 
@@ -10,7 +6,7 @@
 - Social Features
 - Specific Helpers
 - Edit habits
+- Monetization
 ------ v1.0.2
 - Widgets
-- Monetization
 - Apple Health Integration

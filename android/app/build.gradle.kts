@@ -38,20 +38,30 @@ android {
 
     signingConfigs {
         create("release") {
-            if (keystoreProperties["keyAlias"] != null) {
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = keystoreProperties["storeFile"]?.let { rootProject.file(it.toString()) }
-                storePassword = keystoreProperties["storePassword"] as String
-            }
+            keyAlias = keystoreProperties.getProperty("keyAlias") ?: "gradually"
+            keyPassword = keystoreProperties.getProperty("keyPassword") ?: "grdlly"
+            storeFile = file("../${keystoreProperties.getProperty("storeFile") ?: "gradually-release-key.jks"}")
+            storePassword = keystoreProperties.getProperty("storePassword") ?: "grdlly"
         }
     }
 
     buildTypes {
-        release {
-            if (keystoreProperties["keyAlias"] != null) {
-                signingConfig = signingConfigs.getByName("release")
-            }
+        getByName("release") {
+            isDebuggable = false
+            // Temporarily disable minification to rule out R8/ProGuard issues crashing at startup
+            isMinifyEnabled = false
+            // Resource shrinking requires code shrinking. Since minify is off, keep resource shrinking off too
+            isShrinkResources = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = signingConfigs.getByName("release")
+        }
+
+        getByName("debug") {
+            applicationIdSuffix = ".debug"
+            isDebuggable = true
         }
     }
 }
